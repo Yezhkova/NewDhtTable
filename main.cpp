@@ -2,7 +2,7 @@
 
 #include "Swarm.h"
 
-#define SWARM_SIZE 1000
+#define SWARM_SIZE 100000
 
 #define ITER_NUMBER 100
 
@@ -18,6 +18,7 @@ int main()
 
     for( int i=0; i<ITER_NUMBER; i++ )
     {
+        LOG( "Iteration: " << i )
         swarm.performIteration();
     }
 

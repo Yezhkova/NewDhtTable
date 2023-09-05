@@ -63,14 +63,19 @@ public:
     {
         assert( m_nodes.size() > 0 );
         std::uniform_int_distribution<int> range(0, m_nodes.size()-1);
-        int randomNodeIndex = range(gRandomGenerator);
-
-        auto rit = m_nodes.begin();
-        std::advance( rit, randomNodeIndex );
         
         for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
         {
-            Key* randomNodeKey;
+          gen_another:
+            int randomNodeIndex = range(gRandomGenerator);
+            auto rit = m_nodes.begin();
+            std::advance( rit, randomNodeIndex );
+
+            //LOG( " " << it->m_key << " " << rit->m_key )
+            if ( it->m_key == rit->m_key )
+            {
+                goto gen_another;
+            }
             it->tryToFindNode( *rit );
         }
     }
