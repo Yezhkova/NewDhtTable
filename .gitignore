@@ -378,6 +378,7 @@ FodyWeavers.xsd
 .vs
 x64
 _build
+__build
 
 build-Oleksii-Desktop_Qt_6_5_1_MinGW_64_bit-Debug
 build-Vitaliy-Desktop_Qt_6_5_1_MinGW_64_bit-Debug
