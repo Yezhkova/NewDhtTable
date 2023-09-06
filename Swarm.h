@@ -66,6 +66,8 @@ public:
         
         for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
         {
+            it->prepareToIteration();
+            
           gen_another:
             int randomNodeIndex = range(gRandomGenerator);
             auto rit = m_nodes.begin();
@@ -76,8 +78,26 @@ public:
             {
                 goto gen_another;
             }
-            it->tryToFindNode( *rit );
+            it->tryToFindNode( *rit, true );
         }
     }
 
+    void calcStatictic()
+    {
+        assert( m_nodes.size() > 0 );
+
+        uint64_t foundCounter = 0;
+        uint64_t requestCounter = 0;
+
+        for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
+        {
+            if ( it->m_isfound )
+            {
+                foundCounter++;
+            }
+            requestCounter += it->m_requestNumber;
+        }
+        
+        LOG( "--- not found: " << m_nodes.size()-foundCounter-1 << " avg_requestNumber: " << requestCounter/m_nodes.size() << " requestNumber: " << requestCounter );
+    }
 };

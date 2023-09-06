@@ -1,7 +1,15 @@
 #pragma once
 #include <iostream>
 
-class NodeStatistic
+struct NodeStatistic
 {
+    uint64_t    m_requestNumber;
+    bool        m_isfound;
+    
+    void resetCounters()
+    {
+        m_requestNumber = 0;
+        m_isfound = false;
+    }
 };
 

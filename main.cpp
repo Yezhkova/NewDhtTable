@@ -20,6 +20,7 @@ int main()
     {
         LOG( "Iteration: " << i )
         swarm.performIteration();
+        swarm.calcStatictic();
     }
 
     return 0;

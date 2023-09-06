@@ -8,13 +8,11 @@
 #include "Utils.h"
 
 const size_t BUCKET_SIZE = sizeof(Key)*8;
-const size_t MAX_FIND_COUNTER = 100;
+const size_t MAX_FIND_COUNTER = 200;
 
 class Node : public NodeKey, public NodeStatistic
 {
     std::array<Bucket,BUCKET_SIZE> m_buckets;
-    
-    size_t m_findCounter;
 
 public:
     Node(){}
@@ -89,23 +87,28 @@ public:
         return len;
     }
     
-    bool tryToFindNode( const NodeKey& searchedNodeKey )
+    bool tryToFindNode( const NodeKey& searchedNodeKey, bool addMe )
     {
         int index = calcIndex( searchedNodeKey );
         
         std::vector<const NodeKey*> closestNodes;
-        if ( m_buckets[index].findNodeKey( searchedNodeKey, closestNodes ) )
+        if ( m_buckets[index].findNodeKey( searchedNodeKey, closestNodes, addMe ) )
         {
             return true;
         }
         
-        m_findCounter = 0;
-        return continueFindNodeR( searchedNodeKey, closestNodes );
+        m_requestNumber = 0;
+        auto result = continueFindNodeR( searchedNodeKey, closestNodes, addMe );
+        if ( result )
+        {
+            m_isfound = true;
+        }
+        return result;
     }
 
-    bool continueFindNodeR( const NodeKey& searchedNodeKey, std::vector<const NodeKey*>& closestNodes )
+    bool continueFindNodeR( const NodeKey& searchedNodeKey, std::vector<const NodeKey*>& closestNodes, bool addMe )
     {
-        if ( ++m_findCounter > MAX_FIND_COUNTER )
+        if ( ++m_requestNumber > MAX_FIND_COUNTER )
         {
             return false;
         }
@@ -113,14 +116,18 @@ public:
         std::vector<const NodeKey*> closestNodes2;
         for( auto it = closestNodes.begin(); it != closestNodes.end(); it++ )
         {
-            if ( ((Node*)(*it))->tryToFindNode( searchedNodeKey ) )
+            if ( ((Node*)(*it))->tryToFindNode( searchedNodeKey, addMe ) )
             {
                 //TODO
                 return true;
             }
         }
 
-        return continueFindNodeR( searchedNodeKey, closestNodes2 );
+        return continueFindNodeR( searchedNodeKey, closestNodes2, addMe );
     }
 
+    void prepareToIteration()
+    {
+        resetCounters();
+    }
 };

@@ -39,8 +39,9 @@ struct Bucket
         return true;
     }
 
-    bool findNodeKey( const NodeKey& searchedKey, std::vector<const NodeKey*>& closestNodes )
+    bool findNodeKey( const NodeKey& searchedKey, std::vector<const NodeKey*>& closestNodes, bool addRequester )
     {
+        // test that searchKey is present
         for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )
         {
             if ( (*it)->m_key == searchedKey.m_key )
@@ -49,27 +50,27 @@ struct Bucket
             }
         }
         
+        auto initialVectorSize = closestNodes.size();
+        
         //TODO
         for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )
         {
-            closestNodes.push_back( *it );
-            if ( closestNodes.size() >= CLOSEST_NODES_NUMBER )
+            if ( closestNodes.size() < initialVectorSize + CLOSEST_NODES_NUMBER )
             {
-                if ( m_nodes.size() < CLOSEST_NODES_CAPACITY )
-                {
-                    m_nodes.push_back( &searchedKey );
-                }
-                return false;
+                closestNodes.push_back( *it );
+            }
+            else
+            {
+                break;
             }
         }
 
-        if ( m_nodes.size() < CLOSEST_NODES_CAPACITY )
+        if ( addRequester && (m_nodes.size() < CLOSEST_NODES_CAPACITY) )
         {
             m_nodes.push_back( &searchedKey );
         }
+        
         return false;
     }
-
-
 };
 
