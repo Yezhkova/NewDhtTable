@@ -1,10 +1,7 @@
 #include <iostream>
 
 #include "Swarm.h"
-
-#define SWARM_SIZE 100000
-
-#define ITER_NUMBER 100
+#include "Constants.h"
 
 int main()
 {

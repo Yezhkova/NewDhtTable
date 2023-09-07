@@ -4,6 +4,13 @@ set(CMAKE_CXX_STANDARD 20)
 
 project( KademplaProb )
 
-set( SRC_LIST main.cpp Swarm.h Node.h Bucket.h NodeStatistic.h Utils.h )
+set( SRC_LIST
+        main.cpp
+        Swarm.h
+        Node.h
+        Bucket.h
+        NodeStatistic.h
+        Utils.h
+        Constants.h)
 
 add_executable( KademplaProb ${SRC_LIST} )

@@ -3,10 +3,7 @@
 #include <vector>
 #include <cassert>
 #include "Utils.h"
-
-const size_t CLOSEST_NODES_CAPACITY = 6;
-const size_t CLOSEST_NODES_NUMBER = 3;
-
+#include "Constants.h"
 struct Bucket
 {
     std::vector<const NodeKey*> m_nodes;

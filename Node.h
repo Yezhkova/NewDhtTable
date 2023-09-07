@@ -8,7 +8,6 @@
 #include "Utils.h"
 
 const size_t BUCKET_SIZE = sizeof(Key)*8;
-const size_t MAX_FIND_COUNTER = 200;
 
 class Node : public NodeKey, public NodeStatistic
 {
