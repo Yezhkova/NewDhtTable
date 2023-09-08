@@ -2,6 +2,8 @@
 // Created by odal on 9/7/23.
 //
 
+#pragma once
+
 const size_t SWARM_SIZE = 100000;
 const size_t ITER_NUMBER = 100;
 const size_t CLOSEST_NODES_CAPACITY = 6;
