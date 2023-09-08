@@ -39,7 +39,7 @@ public:
                 return std::uniform_int_distribution<std::uint8_t>(0,0xff) ( rng );
             });
             
-            if ( keySet.find( key ) != keySet.end() )
+            if ( keySet.find( key ) != keySet.end() ) // HERE: where did we put the newly generated key in keySet?
             {
                 LOG( "dublicated key" );
                 exit(1);
