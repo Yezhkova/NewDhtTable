@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "Swarm.h"
-#include "Constants.h"
 
 int main()
 {

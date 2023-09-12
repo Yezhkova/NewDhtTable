@@ -21,7 +21,7 @@ public:
 
     const Key& key() const { return m_key; }
 
-    void initByKey( const Key& key ) { m_key = key; }
+    void initByKey( const Key& key ) { m_key = key; } // why do we need this if this is identical to the constructor? +It is never used
     
     void enterSwarm( Node& bootstrapNode )
     {
