@@ -8,6 +8,8 @@ struct Bucket
 {
     std::vector<const NodeKey*> m_nodes;
     
+    Bucket() { m_nodes.reserve( CLOSEST_NODES_CAPACITY ); }
+    
     bool tryToAdd( const NodeKey& candidateKey, std::vector<const NodeKey*>& closestNodes )
     {
         for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )
@@ -36,7 +38,21 @@ struct Bucket
         return true;
     }
 
-    bool findNodeKey( const NodeKey& searchedKey, std::vector<const NodeKey*>& closestNodes, bool addRequester )
+    bool justFindNode( const NodeKey& searchedKey, bool& isFull )
+    {
+        isFull = m_nodes.size() >= CLOSEST_NODES_CAPACITY;
+        
+        for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )
+        {
+            if ( (*it)->m_key == searchedKey.m_key )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    bool findNodeKey( const NodeKey& searchedKey, std::deque<const NodeKey*>& closestNodes, bool addRequester )
     {
         // test that searchKey is present
         for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )

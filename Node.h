@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <deque>
 #include <array>
 
 #include "Bucket.h"
@@ -25,6 +26,7 @@ public:
     void enterSwarm( Node& bootstrapNode )
     {
         std::vector<const NodeKey*> closestNodes;
+        closestNodes.reserve(10000);
         if ( bootstrapNode.tryToAdd( *this, closestNodes ) )
         {
             //TODO
@@ -37,6 +39,7 @@ public:
     void enterSwarmR( std::vector<const NodeKey*>& closestNodes )
     {
         std::vector<const NodeKey*> closestNodes2;
+        closestNodes2.reserve(10000);
         for( auto it = closestNodes.begin(); it != closestNodes.end(); it++ )
         {
             if ( ((Node*)(*it))->tryToAdd( *this, closestNodes2 ) )
@@ -47,6 +50,11 @@ public:
         }
 
         enterSwarmR( closestNodes2 );
+    }
+    
+    void prepareToIteration()
+    {
+        resetCounters();
     }
     
     bool tryToAdd( Node& candidate, std::vector<const NodeKey*>& closestNodes )
@@ -86,47 +94,119 @@ public:
         return len;
     }
     
+    // return -1 or backet index
+    bool justFind( const NodeKey& searchedNodeKey, int& backetIndex, bool& isFull )
+    {
+        backetIndex = calcIndex( searchedNodeKey );
+
+        std::vector<const NodeKey*> closestNodes;
+        closestNodes.reserve(10000);
+
+        if ( m_buckets[backetIndex].justFindNode( searchedNodeKey, isFull ) )
+        {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    bool tryToFindNodeR( const NodeKey& searchedNodeKey,  std::deque<const NodeKey*>& closestNodes, bool addMe )
+    {
+        if ( ++m_reqursionNumber > MAX_REQURSION_COUNTER )
+        {
+            return false;
+        }
+        std::deque<const NodeKey*> closestNodes2;
+        
+        for( auto it = closestNodes.begin(); it != closestNodes.end(); it++ )
+        {
+            if ( ++m_requestNumber > MAX_FIND_COUNTER )
+            {
+                return false;
+            }
+
+            int index = ((Node*)(*it))->calcIndex( searchedNodeKey );
+            
+            if ( ((Node*)(*it))->m_buckets[index].findNodeKey( searchedNodeKey, closestNodes2, addMe ) )
+            {
+                return true;
+            }
+        }
+        
+        return tryToFindNodeR( searchedNodeKey, closestNodes2, addMe );
+    }
+
     bool tryToFindNode( const NodeKey& searchedNodeKey, bool addMe )
     {
         int index = calcIndex( searchedNodeKey );
         
-        std::vector<const NodeKey*> closestNodes;
+        std::deque<const NodeKey*> closestNodes;
+
+//        if ( index > 3 )
+//        {
+//            if ( m_buckets[index-3].findNodeKey( searchedNodeKey, closestNodes, addMe ) )
+//            {
+//                return true;
+//            }
+//        }
+
         if ( m_buckets[index].findNodeKey( searchedNodeKey, closestNodes, addMe ) )
         {
             return true;
         }
         
         m_requestNumber = 0;
-        auto result = continueFindNodeR( searchedNodeKey, closestNodes, addMe );
+        bool result;
+        
+        if (1)
+        {
+            result = continueFindNode( searchedNodeKey, closestNodes, addMe );
+        }
+        else
+        {
+            result = tryToFindNodeR( searchedNodeKey, closestNodes, addMe );
+        }
+        
         if ( result )
         {
-            m_isfound = true;
+            m_isFound = true;
+        }
+        else
+        {
+            m_isFound = false;
         }
         return result;
     }
 
-    bool continueFindNodeR( const NodeKey& searchedNodeKey, std::vector<const NodeKey*>& closestNodes, bool addMe )
+    bool continueFindNode( const NodeKey& searchedNodeKey, std::deque<const NodeKey*>& closestNodes, bool addMe )
     {
-        if ( ++m_requestNumber > MAX_FIND_COUNTER )
-        {
-            return false;
-        }
         
-        std::vector<const NodeKey*> closestNodes2;
         for( auto it = closestNodes.begin(); it != closestNodes.end(); it++ )
         {
-            if ( ((Node*)(*it))->tryToFindNode( searchedNodeKey, addMe ) )
+            if ( ++m_requestNumber > MAX_FIND_COUNTER )
             {
-                //TODO
+                return false;
+            }
+
+            if ( ((Node*)(*it))->privateFindNode( searchedNodeKey, closestNodes, addMe ) )
+            {
                 return true;
             }
         }
 
-        return continueFindNodeR( searchedNodeKey, closestNodes2, addMe );
+        return false;
     }
 
-    void prepareToIteration()
+    bool privateFindNode( const NodeKey& searchedNodeKey, std::deque<const NodeKey*>& closestNodes, bool addMe )
     {
-        resetCounters();
+        int index = calcIndex( searchedNodeKey );
+        
+        if ( m_buckets[index].findNodeKey( searchedNodeKey, closestNodes, addMe ) )
+        {
+            return true;
+        }
+
+        return false;
     }
+
 };
