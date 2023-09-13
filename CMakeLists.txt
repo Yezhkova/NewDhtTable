@@ -12,5 +12,6 @@ set( SRC_LIST
         NodeStatistic.h
         Utils.h
         Constants.h)
-
+        
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 add_executable( KademplaProb ${SRC_LIST} )

@@ -4,6 +4,9 @@
 #include <cassert>
 #include "Utils.h"
 #include "Constants.h"
+
+using ClosestNodes = std::vector<const NodeKey*>;
+
 struct Bucket
 {
     std::vector<const NodeKey*> m_nodes;
@@ -52,7 +55,7 @@ struct Bucket
         return false;
     }
     
-    bool findNodeKey( const NodeKey& searchedKey, std::deque<const NodeKey*>& closestNodes, bool addRequester )
+    bool findNodeKey( const NodeKey& searchedKey, ClosestNodes& closestNodes, bool addRequester )
     {
         // test that searchKey is present
         for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )

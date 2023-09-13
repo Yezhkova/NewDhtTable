@@ -81,7 +81,7 @@ public:
         {
             len += 8;
         }
-        
+
         if ( j < sizeof(Key) )
         {
             unsigned char aByte = aBytes[j];
@@ -93,7 +93,7 @@ public:
         }
         return len;
     }
-    
+
     // return -1 or backet index
     bool justFind( const NodeKey& searchedNodeKey, int& backetIndex, bool& isFull )
     {
@@ -110,13 +110,13 @@ public:
         return false;
     }
     
-    bool tryToFindNodeR( const NodeKey& searchedNodeKey,  std::deque<const NodeKey*>& closestNodes, bool addMe )
+    bool tryToFindNodeR( const NodeKey& searchedNodeKey,  ClosestNodes& closestNodes, bool addMe )
     {
         if ( ++m_reqursionNumber > MAX_REQURSION_COUNTER )
         {
             return false;
         }
-        std::deque<const NodeKey*> closestNodes2;
+        ClosestNodes closestNodes2;
         
         for( auto it = closestNodes.begin(); it != closestNodes.end(); it++ )
         {
@@ -140,7 +140,9 @@ public:
     {
         int index = calcIndex( searchedNodeKey );
         
-        std::deque<const NodeKey*> closestNodes;
+        ClosestNodes closestNodes;
+        closestNodes.reserve( MAX_FIND_COUNTER );
+        
 
 //        if ( index > 3 )
 //        {
@@ -177,12 +179,14 @@ public:
         return m_isFound;
     }
 
-    bool continueFindNode( const NodeKey& searchedNodeKey, std::deque<const NodeKey*>& closestNodes, bool addMe )
+    bool continueFindNode( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes, bool addMe )
     {
-        
-        for( size_t i = 0; i < closestNodes.size(); i++ )
+        for( auto it = closestNodes.begin(); it != closestNodes.end(); it++ )
         {
-            Node& node = *((Node*)closestNodes[i]);
+            Node& node = *((Node*)*it);
+//        for( size_t i = 0; i < closestNodes.size(); i++ )
+//        {
+//            Node& node = *((Node*)closestNodes[i]);
             
             if ( ++m_requestNumber > MAX_FIND_COUNTER )
             {
@@ -200,7 +204,7 @@ public:
         return false;
     }
 
-    bool privateFindNode( const NodeKey& searchedNodeKey, std::deque<const NodeKey*>& closestNodes, bool addMe )
+    bool privateFindNode( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes, bool addMe )
     {
         int index = calcIndex( searchedNodeKey );
         
