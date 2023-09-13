@@ -14,7 +14,7 @@ int main()
 
     for( int i=0; i<ITER_NUMBER; i++ )
     {
-        LOG( "Iteration: " << i )
+        LOG( "\nIteration: " << i )
         swarm.performIteration();
         swarm.calcStatictic();
         swarm.testCompleteness();

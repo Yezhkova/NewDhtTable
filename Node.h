@@ -146,36 +146,35 @@ public:
 //        {
 //            if ( m_buckets[index-3].findNodeKey( searchedNodeKey, closestNodes, addMe ) )
 //            {
+//                m_isFound = true;
 //                return true;
 //            }
 //        }
 
+//        if ( m_buckets[0].findNodeKey( searchedNodeKey, closestNodes, addMe ) )
+//        {
+//            m_isFound = true;
+//            return true;
+//        }
+            
         if ( m_buckets[index].findNodeKey( searchedNodeKey, closestNodes, addMe ) )
         {
+            m_isFound = true;
             return true;
         }
         
         m_requestNumber = 0;
-        bool result;
         
         if (1)
         {
-            result = continueFindNode( searchedNodeKey, closestNodes, addMe );
+            m_isFound = continueFindNode( searchedNodeKey, closestNodes, addMe );
         }
         else
         {
-            result = tryToFindNodeR( searchedNodeKey, closestNodes, addMe );
+            m_isFound = tryToFindNodeR( searchedNodeKey, closestNodes, addMe );
         }
         
-        if ( result )
-        {
-            m_isFound = true;
-        }
-        else
-        {
-            m_isFound = false;
-        }
-        return result;
+        return m_isFound;
     }
 
     bool continueFindNode( const NodeKey& searchedNodeKey, std::deque<const NodeKey*>& closestNodes, bool addMe )

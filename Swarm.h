@@ -110,12 +110,12 @@ public:
     
     void testCompleteness()
     {
-        const int bucketThreashould = 10;
+        const int bucketThreashould = 1;
         uint64_t addedCounter = 0;
         uint64_t fullCounter = 0;
         uint64_t totalCounter = 0;
 
-        const int TEST_NODE_IDX = 1001;
+        const int TEST_NODE_IDX = 5001;
         
         for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
         {
