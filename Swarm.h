@@ -58,7 +58,15 @@ public:
             it->enterSwarm( m_nodes.front() );
         }
     }
-    
+
+    std::vector<Node>::iterator generate(std::uniform_int_distribution<int>& range)
+    {
+        int randomNodeIndex = range(gRandomGenerator);
+        auto rit = m_nodes.begin();
+        std::advance( rit, randomNodeIndex );
+        return rit;
+    }
+
     void performIteration()
     {
         assert( m_nodes.size() > 0 );
@@ -67,18 +75,24 @@ public:
         for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
         {
             it->prepareToIteration();
-            
-          gen_another:
-            int randomNodeIndex = range(gRandomGenerator);
-            auto rit = m_nodes.begin();
-            std::advance( rit, randomNodeIndex );
 
-            //LOG( " " << it->m_key << " " << rit->m_key )
-            if ( it->m_key == rit->m_key )
-            {
-                goto gen_another;
+            auto nodeIter = generate(range);
+            while(it->m_key == nodeIter->m_key){
+                nodeIter = generate(range);
             }
-            it->tryToFindNode( *rit, true );
+            it->tryToFindNode(*nodeIter, true );
+
+//          gen_another:
+//            int randomNodeIndex = range(gRandomGenerator);
+//            auto rit = m_nodes.begin();
+//            std::advance( rit, randomNodeIndex );
+//
+//            //LOG( " " << it->m_key << " " << rit->m_key )
+//            if ( it->m_key == rit->m_key )
+//            {
+//                goto gen_another;
+//            }
+//            it->tryToFindNode( *rit, true );
         }
     }
 
