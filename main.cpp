@@ -17,6 +17,7 @@ int main()
         LOG( "Iteration: " << i )
         swarm.performIteration();
         swarm.calcStatictic();
+        swarm.testCompleteness();
     }
 
     return 0;

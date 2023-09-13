@@ -16,6 +16,8 @@ class Swarm
 public:
     Swarm(){}
     
+    Node& bootstrapNode() { return m_nodes[0]; }
+
     void init( int swarmSize )
     {
         m_nodes.reserve(swarmSize);
@@ -35,7 +37,7 @@ public:
         for( int i=0; i<swarmSize; )
         {
             std::generate( buffer.begin(), buffer.end(), [&]
-            {
+                          {
                 return std::uniform_int_distribution<std::uint8_t>(0,0xff) ( rng );
             });
             
@@ -75,24 +77,18 @@ public:
         for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
         {
             it->prepareToIteration();
+            
+          gen_another:
+            int randomNodeIndex = range(gRandomGenerator);
+            auto rit = m_nodes.begin();
+            std::advance( rit, randomNodeIndex );
 
-            auto nodeIter = generate(range);
-            while(it->m_key == nodeIter->m_key){
-                nodeIter = generate(range);
+            //LOG( " " << it->m_key << " " << rit->m_key )
+            if ( it->m_key == rit->m_key )
+            {
+                goto gen_another;
             }
-            it->tryToFindNode(*nodeIter, true );
-
-//          gen_another:
-//            int randomNodeIndex = range(gRandomGenerator);
-//            auto rit = m_nodes.begin();
-//            std::advance( rit, randomNodeIndex );
-//
-//            //LOG( " " << it->m_key << " " << rit->m_key )
-//            if ( it->m_key == rit->m_key )
-//            {
-//                goto gen_another;
-//            }
-//            it->tryToFindNode( *rit, true );
+            it->tryToFindNode( *rit, true );
         }
     }
 
@@ -101,17 +97,59 @@ public:
         assert( m_nodes.size() > 0 );
 
         uint64_t foundCounter = 0;
+        uint64_t tooManyCounter = 0;
         uint64_t requestCounter = 0;
 
         for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
         {
-            if ( it->m_isfound )
+            if ( it->m_isFound )
             {
                 foundCounter++;
+            }
+            if ( it->tooManyRequests() )
+            {
+                tooManyCounter++;
             }
             requestCounter += it->m_requestNumber;
         }
         
-        LOG( "--- not found: " << m_nodes.size()-foundCounter-1 << " avg_requestNumber: " << requestCounter/m_nodes.size() << " requestNumber: " << requestCounter );
+        LOG( "--- not found: " << m_nodes.size()-foundCounter-1 << "(" << tooManyCounter << ") avg_requestNumber: " << requestCounter/m_nodes.size() << " requestNumber: " << requestCounter );
+    }
+
+    void testCompleteness()
+    {
+        const int bucketThreashould = 10;
+        uint64_t addedCounter = 0;
+        uint64_t fullCounter = 0;
+        uint64_t totalCounter = 0;
+
+        const int TEST_NODE_IDX = 1001;
+
+        for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
+        {
+            if ( m_nodes[TEST_NODE_IDX].m_key == it->m_key )
+                continue;
+
+            int backetIndex;
+            bool isFull;
+            if ( it->justFind( m_nodes[TEST_NODE_IDX], backetIndex, isFull ) )
+            {
+                if ( backetIndex >= bucketThreashould )
+                {
+                    addedCounter++;
+                    totalCounter++;
+                }
+            }
+            else
+            {
+                if ( backetIndex >= bucketThreashould )
+                {
+                    totalCounter++;
+                    if ( isFull ) fullCounter++;
+                }
+            }
+        }
+
+        LOG( "Completeness: " << addedCounter << " in " << totalCounter << "-" << fullCounter << "=" << totalCounter-fullCounter );
     }
 };
