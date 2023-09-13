@@ -180,14 +180,18 @@ public:
     bool continueFindNode( const NodeKey& searchedNodeKey, std::deque<const NodeKey*>& closestNodes, bool addMe )
     {
         
-        for( auto it = closestNodes.begin(); it != closestNodes.end(); it++ )
+        for( size_t i = 0; i < closestNodes.size(); i++ )
         {
+            Node& node = *((Node*)closestNodes[i]);
+            
             if ( ++m_requestNumber > MAX_FIND_COUNTER )
             {
                 return false;
             }
 
-            if ( ((Node*)(*it))->privateFindNode( searchedNodeKey, closestNodes, addMe ) )
+            int index = node.calcIndex( searchedNodeKey );
+            
+            if ( node.m_buckets[index].findNodeKey( searchedNodeKey, closestNodes, addMe ) )
             {
                 return true;
             }
@@ -200,12 +204,7 @@ public:
     {
         int index = calcIndex( searchedNodeKey );
         
-        if ( m_buckets[index].findNodeKey( searchedNodeKey, closestNodes, addMe ) )
-        {
-            return true;
-        }
-
-        return false;
+        return m_buckets[index].findNodeKey( searchedNodeKey, closestNodes, addMe );
     }
 
 };
