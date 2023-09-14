@@ -17,7 +17,7 @@ public:
     Swarm(){}
     
     Node& bootstrapNode() { return m_nodes[0]; }
-
+    
     void init( int swarmSize )
     {
         m_nodes.reserve(swarmSize);
@@ -25,7 +25,7 @@ public:
         std::random_device   dev;
         std::seed_seq        seed({dev(), dev(), dev(), dev()});
         std::mt19937         rng(seed);
-
+        
         union
         {
             Key key;
@@ -60,7 +60,7 @@ public:
             it->enterSwarm( m_nodes.front() );
         }
     }
-
+    
     std::vector<Node>::iterator generate(std::uniform_int_distribution<int>& range)
     {
         int randomNodeIndex = range(gRandomGenerator);
@@ -68,21 +68,21 @@ public:
         std::advance( rit, randomNodeIndex );
         return rit;
     }
-
+    
     void performIteration()
     {
         assert( m_nodes.size() > 0 );
-        std::uniform_int_distribution<int> range(0, m_nodes.size()-1);
+        std::uniform_int_distribution<int> range(0, int(m_nodes.size())-1);
         
         for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
         {
             it->prepareToIteration();
             
-          gen_another:
+        gen_another:
             int randomNodeIndex = range(gRandomGenerator);
             auto rit = m_nodes.begin();
             std::advance( rit, randomNodeIndex );
-
+            
             //LOG( " " << it->m_key << " " << rit->m_key )
             if ( it->m_key == rit->m_key )
             {
@@ -91,15 +91,15 @@ public:
             it->tryToFindNode( *rit, true );
         }
     }
-
+    
     void calcStatictic()
     {
         assert( m_nodes.size() > 0 );
-
+        
         uint64_t foundCounter = 0;
         uint64_t tooManyCounter = 0;
         uint64_t requestCounter = 0;
-
+        
         for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
         {
             if ( it->m_isFound )
@@ -115,21 +115,21 @@ public:
         
         LOG( "--- not found: " << m_nodes.size()-foundCounter-1 << "(" << tooManyCounter << ") avg_requestNumber: " << requestCounter/m_nodes.size() << " requestNumber: " << requestCounter );
     }
-
+    
     void testCompleteness()
     {
         const int bucketThreashould = 1;
         uint64_t addedCounter = 0;
         uint64_t fullCounter = 0;
         uint64_t totalCounter = 0;
-
+        
         const int TEST_NODE_IDX = 5001;
-
+        
         for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
         {
             if ( m_nodes[TEST_NODE_IDX].m_key == it->m_key )
                 continue;
-
+            
             int backetIndex;
             bool isFull;
             if ( it->justFind( m_nodes[TEST_NODE_IDX], backetIndex, isFull ) )
@@ -149,7 +149,33 @@ public:
                 }
             }
         }
-
+        
         LOG( "Completeness: " << addedCounter << " in " << totalCounter << "-" << fullCounter << "=" << totalCounter-fullCounter );
+    }
+    
+    void testFullCompleteness()
+    {
+        volatile uint64_t emptyCounter = 0;
+
+        for( auto& testNode : m_nodes )
+        {
+            std::array<int,BUCKET_SIZE> isBucketEmpty;
+            memset( &isBucketEmpty, 0, sizeof(isBucketEmpty));
+
+            for( auto& node : m_nodes )
+            {
+                if ( testNode.m_key == node.m_key )
+                    continue;
+
+                testNode.testFullCompleteness( node, isBucketEmpty );
+            }
+            
+            for( size_t i=0; i<isBucketEmpty.size(); i++ )
+            {
+                emptyCounter = emptyCounter + isBucketEmpty[i];
+            }
+        }
+
+        LOG( "emptyCounter: " << emptyCounter );
     }
 };

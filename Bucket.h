@@ -13,6 +13,8 @@ struct Bucket
     
     Bucket() { m_nodes.reserve( CLOSEST_NODES_CAPACITY ); }
     
+    bool empty() const { return m_nodes.empty(); }
+    
     bool tryToAdd( const NodeKey& candidateKey, std::vector<const NodeKey*>& closestNodes )
     {
         for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )

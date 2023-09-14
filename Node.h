@@ -8,7 +8,7 @@
 #include "NodeStatistic.h"
 #include "Utils.h"
 
-const size_t BUCKET_SIZE = sizeof(Key)*8;
+const size_t BUCKET_SIZE = sizeof(Key)*8; // 8 bits per byte
 
 class Node : public NodeKey, public NodeStatistic
 {
@@ -211,4 +211,13 @@ public:
         return m_buckets[index].findNodeKey( searchedNodeKey, closestNodes, addMe );
     }
 
+    void testFullCompleteness( Node& node, std::array<int,BUCKET_SIZE>& isBucketEmpty )
+    {
+        int index = calcIndex( node );
+        assert( index >=0 && index<BUCKET_SIZE );
+        if ( m_buckets[index].empty() )
+        {
+            isBucketEmpty[index] = 1;
+        }
+    }
 };

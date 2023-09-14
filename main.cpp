@@ -29,10 +29,16 @@ int main()
 
     for( int i=0; i<ITER_NUMBER; i++ )
     {
-        LOG( "\nIteration: " << i )
+        //LOG( "\nIteration: " << i )
         swarm.performIteration();
-        swarm.calcStatictic();
-        swarm.testCompleteness();
+        //swarm.calcStatictic();
+        //swarm.testCompleteness();
+        if ( (i+1)%100 == 0 )
+        {
+            LOG( "\nIteration: " << i )
+            swarm.calcStatictic();
+            swarm.testFullCompleteness();
+        }
     }
 
     auto endTime = std::chrono::high_resolution_clock::now();
