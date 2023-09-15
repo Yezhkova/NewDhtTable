@@ -1,18 +1,38 @@
 #include <iostream>
 #include <chrono>
+#include <thread>
 
 #include "Swarm.h"
 
 
-int main1() {
-    auto startTime = std::chrono::high_resolution_clock::now();
+int calcCompleteness( Swarm& swarm )
+{
+    const size_t THREAD_NUM = 5;
+    const size_t NUM = SWARM_SIZE/THREAD_NUM;
+    std::thread threads[THREAD_NUM];
+    int emptyCounters[THREAD_NUM];
 
-    auto endTime = std::chrono::high_resolution_clock::now();
+    for( int i=0; i<THREAD_NUM; i++ )
+    {
+        threads[i] = std::thread( [&swarm,&emptyCounters,i]
+        {
+            emptyCounters[i] = 0;
+            emptyCounters[i] = swarm.testFullCompleteness( i*NUM, i*NUM+NUM );
+        });
+    }
 
-    std::chrono::microseconds durationMs = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-    std::cout << "Execution time: " << durationMs.count() << " microseconds." << std::endl;
+    for( int i=0; i<THREAD_NUM; i++ )
+    {
+        threads[i].join();
+    }
 
-    return 0;
+    int emptyCounter = 0;
+    for( int i=0; i<THREAD_NUM; i++ )
+    {
+        emptyCounter += emptyCounters[i];
+    }
+
+    LOG( "emptyCounter: " << emptyCounter );
 }
 
 int main()
@@ -33,11 +53,15 @@ int main()
         swarm.performIteration();
         //swarm.calcStatictic();
         //swarm.testCompleteness();
+        
         if ( (i+1)%100 == 0 )
         {
             LOG( "\nIteration: " << i )
             swarm.calcStatictic();
-            swarm.testFullCompleteness();
+
+//            auto emptyCounter = swarm.testFullCompleteness();
+//            LOG( "emptyCounter: " << emptyCounter );
+            calcCompleteness( swarm );
         }
     }
 

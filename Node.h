@@ -215,6 +215,7 @@ public:
     {
         int index = calcIndex( node );
         assert( index >=0 && index<BUCKET_SIZE );
+        
         if ( m_buckets[index].empty() )
         {
             isBucketEmpty[index] = 1;

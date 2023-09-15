@@ -153,14 +153,22 @@ public:
         LOG( "Completeness: " << addedCounter << " in " << totalCounter << "-" << fullCounter << "=" << totalCounter-fullCounter );
     }
     
-    void testFullCompleteness()
+    int testFullCompleteness( size_t startIndex = 0, size_t endIndex = 0 )
     {
-        volatile uint64_t emptyCounter = 0;
-
-        for( auto& testNode : m_nodes )
+        if ( endIndex == 0 )
         {
-            std::array<int,BUCKET_SIZE> isBucketEmpty;
-            memset( &isBucketEmpty, 0, sizeof(isBucketEmpty));
+            endIndex = m_nodes.size();
+        }
+        
+        int emptyCounter = 0;
+
+        //LOG( "startIndex: " << startIndex << ", endIndex: " << endIndex );
+
+        for( size_t i=startIndex; i<endIndex; i++ )
+        {
+            auto& testNode = m_nodes[i];
+
+            std::array<int,BUCKET_SIZE> isBucketEmpty{};
 
             for( auto& node : m_nodes )
             {
@@ -175,7 +183,7 @@ public:
                 emptyCounter = emptyCounter + isBucketEmpty[i];
             }
         }
-
-        LOG( "emptyCounter: " << emptyCounter );
+        
+        return emptyCounter;
     }
 };
