@@ -87,7 +87,7 @@ public:
                 {
                     LOG( m_nodes[i].m_key );
                     LOG( key );
-                    LOG( "dublicated key: " << i );
+                    LOG( "duplicated key: " << i );
                     exit(1);
                     continue;
                 }
@@ -217,7 +217,7 @@ public:
         }
     }
     
-    void calcStatictic()
+    void calcStatistic()
     {
         assert( m_nodes.size() > 0 );
         
@@ -243,7 +243,7 @@ public:
     
     void testCompleteness()
     {
-        const int bucketThreashould = 1;
+        const int bucketThreshold = 1;
         uint64_t addedCounter = 0;
         uint64_t fullCounter = 0;
         uint64_t totalCounter = 0;
@@ -255,11 +255,11 @@ public:
             if ( m_nodes[TEST_NODE_IDX].m_key == it->m_key )
                 continue;
             
-            int backetIndex;
+            int bucketIndex;
             bool isFull;
-            if ( it->justFind( m_nodes[TEST_NODE_IDX], backetIndex, isFull ) )
+            if ( it->justFind(m_nodes[TEST_NODE_IDX], bucketIndex, isFull ) )
             {
-                if ( backetIndex >= bucketThreashould )
+                if (bucketIndex >= bucketThreshold )
                 {
                     addedCounter++;
                     totalCounter++;
@@ -267,7 +267,7 @@ public:
             }
             else
             {
-                if ( backetIndex >= bucketThreashould )
+                if (bucketIndex >= bucketThreshold )
                 {
                     totalCounter++;
                     if ( isFull ) fullCounter++;
