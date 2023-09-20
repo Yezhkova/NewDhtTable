@@ -12,44 +12,23 @@ const size_t BUCKET_SIZE = sizeof(Key)*8; // 8 bits per byte
 
 class Node : public NodeKey, public NodeStatistic
 {
+    int m_index;
+    
     std::array<Bucket,BUCKET_SIZE> m_buckets;
 
 public:
     Node(){}
 
-    Node( const Key& key ) { m_key = key; }
+    Node( int index, const Key& key ) { m_index = index, m_key = key; }
 
     const Key& key() const { return m_key; }
 
     void initByKey( const Key& key ) { m_key = key; } // why do we need this if this is identical to the constructor? +It is never used
-    
-    void enterSwarm( Node& bootstrapNode )
-    {
-        std::vector<const NodeKey*> closestNodes;
-        closestNodes.reserve(10000);
-        if ( bootstrapNode.tryToAdd( *this, closestNodes ) )
-        {
-            //TODO
-            return;
-        }
-        
-        enterSwarmR( closestNodes );
-    }
 
-    void enterSwarmR( std::vector<const NodeKey*>& closestNodes )
+    template <class Archive>
+    void serialize( Archive & ar )
     {
-        std::vector<const NodeKey*> closestNodes2;
-        closestNodes2.reserve(10000);
-        for( auto it = closestNodes.begin(); it != closestNodes.end(); it++ )
-        {
-            if ( ((Node*)(*it))->tryToAdd( *this, closestNodes2 ) )
-            {
-                //TODO
-                return;
-            }
-        }
-
-        enterSwarmR( closestNodes2 );
+        ar( m_index, m_key, m_buckets );
     }
     
     void prepareToIteration()
@@ -62,7 +41,7 @@ public:
         
         int index = calcIndex( candidate );
         
-        return m_buckets[index].tryToAdd( candidate, closestNodes );
+        return m_buckets[index].tryToAdd( candidate, index, closestNodes );
     }
 
     int calcIndex( const NodeKey& candidate ) const
@@ -99,9 +78,6 @@ public:
     {
         backetIndex = calcIndex( searchedNodeKey );
 
-        std::vector<const NodeKey*> closestNodes;
-        closestNodes.reserve(10000);
-
         if ( m_buckets[backetIndex].justFindNode( searchedNodeKey, isFull ) )
         {
             return true;
@@ -110,92 +86,68 @@ public:
         return false;
     }
     
-    bool tryToFindNodeR( const NodeKey& searchedNodeKey,  ClosestNodes& closestNodes, bool addMe )
-    {
-        if ( ++m_reqursionNumber > MAX_REQURSION_COUNTER )
-        {
-            return false;
-        }
-        ClosestNodes closestNodes2;
-        
-        for( auto it = closestNodes.begin(); it != closestNodes.end(); it++ )
-        {
-            if ( ++m_requestNumber > MAX_FIND_COUNTER )
-            {
-                return false;
-            }
-
-            int index = ((Node*)(*it))->calcIndex( searchedNodeKey );
-            
-            if ( ((Node*)(*it))->m_buckets[index].findNodeKey( searchedNodeKey, closestNodes2, addMe ) )
-            {
-                return true;
-            }
-        }
-        
-        return tryToFindNodeR( searchedNodeKey, closestNodes2, addMe );
-    }
-
-    bool tryToFindNode( const NodeKey& searchedNodeKey, bool addMe )
+    bool findNodeInBuckets( const NodeKey& searchedNodeKey )
     {
         int index = calcIndex( searchedNodeKey );
+        //LOG( " this: " << this << " b_index: " << index << " key: " << searchedNodeKey.m_key )
+        return m_buckets[index].findNode(searchedNodeKey);
+
+    }
+
+    bool privateFindNode( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes, const NodeKey& requesterNodeKey )
+    {
+        // Alway try to add requester in my 'Buckets'
+        if ( requesterNodeKey.m_key != m_key )
+        {
+            int index = calcIndex( requesterNodeKey );
+            if ( m_buckets[index].tryToAddNodeKey( requesterNodeKey, ((Node&)requesterNodeKey).m_index ) )
+            {
+                //LOG( "addeded: " << this << " to: " << m_index << " bucketIdx: " << index << " key: " << requesterNodeKey.m_key );
+            }
+        }
         
+        int index = calcIndex( searchedNodeKey );
+        
+        return m_buckets[index].findNodeKey( searchedNodeKey, closestNodes );
+    }
+    
+    bool findNode( const NodeKey& searchedNodeKey, const NodeKey& requesterKey )
+    {
         ClosestNodes closestNodes;
         closestNodes.reserve( MAX_FIND_COUNTER );
         
+        m_isFound = privateFindNode( searchedNodeKey, closestNodes, requesterKey );
 
-//        if ( index > 3 )
-//        {
-//            if ( m_buckets[index-3].findNodeKey( searchedNodeKey, closestNodes, addMe ) )
-//            {
-//                m_isFound = true;
-//                return true;
-//            }
-//        }
-
-//        if ( m_buckets[0].findNodeKey( searchedNodeKey, closestNodes, addMe ) )
-//        {
-//            m_isFound = true;
-//            return true;
-//        }
-            
-        if ( m_buckets[index].findNodeKey( searchedNodeKey, closestNodes, addMe ) )
+        if ( ! m_isFound )
         {
-            m_isFound = true;
-            return true;
+            m_isFound = continueFindNode( searchedNodeKey, closestNodes, requesterKey );
         }
         
-        m_requestNumber = 0;
-        
-        if (1)
-        {
-            m_isFound = continueFindNode( searchedNodeKey, closestNodes, addMe );
-        }
-        else
-        {
-            m_isFound = tryToFindNodeR( searchedNodeKey, closestNodes, addMe );
-        }
+//        if ( ! m_isFound )
+//        {
+//            closestNodes.clear();
+//            closestNodes.reserve( MAX_FIND_COUNTER );
+//            m_buckets[0].findNodeKey( searchedNodeKey, closestNodes );
+//            m_isFound = continueFindNode( searchedNodeKey, closestNodes, requesterKey );
+//        }
         
         return m_isFound;
     }
 
-    bool continueFindNode( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes, bool addMe )
+    bool continueFindNode( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes, const NodeKey& requesterKey )
     {
+        m_requestNumber = 0;
+        
         for( auto it = closestNodes.begin(); it != closestNodes.end(); it++ )
         {
-            Node& node = *((Node*)*it);
-//        for( size_t i = 0; i < closestNodes.size(); i++ )
-//        {
-//            Node& node = *((Node*)closestNodes[i]);
-            
             if ( ++m_requestNumber > MAX_FIND_COUNTER )
             {
                 return false;
             }
 
-            int index = node.calcIndex( searchedNodeKey );
+            Node& closestNode = *((Node*)*it);
             
-            if ( node.m_buckets[index].findNodeKey( searchedNodeKey, closestNodes, addMe ) )
+            if ( closestNode.privateFindNode( searchedNodeKey, closestNodes, requesterKey ) )
             {
                 return true;
             }
@@ -204,11 +156,16 @@ public:
         return false;
     }
 
-    bool privateFindNode( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes, bool addMe )
+    void restorePointers( std::vector<Node>& swarmNodes )
     {
-        int index = calcIndex( searchedNodeKey );
-        
-        return m_buckets[index].findNodeKey( searchedNodeKey, closestNodes, addMe );
+        for( int i=0; i<BUCKET_SIZE; i++ )
+        {
+            std::vector<Bucket::NodeInfo>& bucketNodes = m_buckets[i].bucketNodes();
+            for( auto& nodeInfo: bucketNodes )
+            {
+                nodeInfo.m_ptr = &swarmNodes[nodeInfo.m_nodeIndex];
+            }
+        }
     }
 
     void testFullCompleteness( Node& node, std::array<int,BUCKET_SIZE>& isBucketEmpty )

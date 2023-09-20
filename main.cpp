@@ -7,7 +7,7 @@
 
 int calcCompleteness( Swarm& swarm )
 {
-    const size_t THREAD_NUM = 5;
+    const size_t THREAD_NUM = 12;
     const size_t NUM = SWARM_SIZE/THREAD_NUM;
     std::thread threads[THREAD_NUM];
     int emptyCounters[THREAD_NUM];
@@ -35,18 +35,17 @@ int calcCompleteness( Swarm& swarm )
     LOG( "emptyCounter: " << emptyCounter );
 }
 
-int main()
+void makeSwarm( Swarm& swarm, size_t swarmSize )
 {
+    auto startTime = std::chrono::high_resolution_clock::now();
+    
     LOG( "init" );
-    Swarm swarm;
-    swarm.init( SWARM_SIZE );
+    swarm.init( swarmSize );
     LOG( "initialized" );
-
+    
     swarm.colonize();
     LOG( "colonized" );
-
-    auto startTime = std::chrono::high_resolution_clock::now();
-
+    
     for( int i=0; i<ITER_NUMBER; i++ )
     {
         //LOG( "\nIteration: " << i )
@@ -58,16 +57,71 @@ int main()
         {
             LOG( "\nIteration: " << i )
             swarm.calcStatictic();
-
-//            auto emptyCounter = swarm.testFullCompleteness();
-//            LOG( "emptyCounter: " << emptyCounter );
-            calcCompleteness( swarm );
+            
+            //            auto emptyCounter = swarm.testFullCompleteness();
+            //            LOG( "emptyCounter: " << emptyCounter );
+                        calcCompleteness( swarm );
         }
+        
     }
+
+    swarm.performX();
+    swarm.performIteration();
+    swarm.calcStatictic();
+    calcCompleteness( swarm );
 
     auto endTime = std::chrono::high_resolution_clock::now();
     auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
-    LOG( "Execution time: " << durationMs.count()/1000 << "." << durationMs.count()%1000 << " seconds." );
+    LOG( "Make execution time: " << durationMs.count()/1000 << "." << durationMs.count()%1000 << " seconds." );
+}
+
+void saveSwarm( Swarm& swarm )
+{
+    std::ofstream os( "swarm.bin", std::ios::binary );
+    cereal::BinaryOutputArchive archive( os );
+    archive( swarm );
+    LOG("saved");
+}
+
+#define NEW_NODE_NUMBER 1
+
+void loadSwarm( Swarm& swarm )
+{
+    std::ifstream os( "swarm.bin", std::ios::binary );
+    cereal::BinaryInputArchive archive( os );
+    archive( swarm );
+
+    swarm.restorePointers(NEW_NODE_NUMBER);
+}
+
+void runTest( Swarm& swarm )
+{
+    auto startTime = std::chrono::high_resolution_clock::now();
+    
+    swarm.addNewParticipants(NEW_NODE_NUMBER);
+    
+    swarm.testNewNodes(NEW_NODE_NUMBER);
+    swarm.calcStatictic();
+    
+    auto endTime = std::chrono::high_resolution_clock::now();
+    auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+    LOG( "Test execution time: " << durationMs.count()/1000 << "." << durationMs.count()%1000 << " seconds." );
+}
+
+int main()
+{
+    //gHideLog = true;
+    
+    Swarm swarm;
+    
+    makeSwarm( swarm, SWARM_SIZE+NEW_NODE_NUMBER*10 );
+//    saveSwarm(swarm);
+//    loadSwarm(swarm);
+
+//    gHideLog = false;
+//    LOG( "-1-: " << swarm.size() );
+//    runTest(swarm);
+//    LOG( "-2-: " << swarm.size() );
 
     return 0;
 }

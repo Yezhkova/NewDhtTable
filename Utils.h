@@ -5,6 +5,14 @@
 #include <iostream>
 #include <mutex>
 
+#include <cereal/cereal.hpp>
+#include <cereal/types/array.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/archives/binary.hpp>
+#include <fstream>
+
+
 using Key = uint64_t;
 //using Key = std::array<uint8_t,20>;
 
@@ -15,12 +23,15 @@ struct NodeKey
 
 inline std::recursive_mutex gLogMutex;
 
+inline bool gHideLog = false;
+
 // LOG
 #ifndef QDBG
     #define LOG(expr) { \
+        if ( !gHideLog ) {\
             const std::lock_guard<std::recursive_mutex> autolock( gLogMutex ); \
             std::cout << std::fixed << expr << std::endl << std::flush; \
-        }
+    }   }
 #else
     #define LOG(expr) { \
             std::ostringstream out; \

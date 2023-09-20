@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <cassert>
+
 #include "Utils.h"
 #include "Constants.h"
 
@@ -9,17 +10,37 @@ using ClosestNodes = std::vector<const NodeKey*>;
 
 struct Bucket
 {
-    std::vector<const NodeKey*> m_nodes;
+    struct NodeInfo
+    {
+        const NodeKey*  m_ptr;
+        int             m_nodeIndex;
+        
+        template <class Archive>
+        void serialize( Archive & ar )
+        {
+            ar( m_nodeIndex );
+        }
+    };
+    
+    std::vector<NodeInfo> m_nodes;
     
     Bucket() { m_nodes.reserve( CLOSEST_NODES_CAPACITY ); }
+
+    template <class Archive>
+    void serialize( Archive & ar )
+    {
+        ar( m_nodes );
+    }
     
     bool empty() const { return m_nodes.empty(); }
     
-    bool tryToAdd( const NodeKey& candidateKey, std::vector<const NodeKey*>& closestNodes )
+    std::vector<NodeInfo>& bucketNodes() { return m_nodes; }
+    
+    bool tryToAdd( const NodeKey& candidateKey, int nodeIndex, std::vector<const NodeKey*>& closestNodes )
     {
         for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )
         {
-            if ( (*it)->m_key == candidateKey.m_key )
+            if ( it->m_ptr->m_key == candidateKey.m_key )
             {
                 assert(0);
             }
@@ -30,7 +51,7 @@ struct Bucket
             //TODO
             for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )
             {
-                closestNodes.push_back( *it );
+                closestNodes.emplace_back( it->m_ptr );
                 if ( closestNodes.size() >= CLOSEST_NODES_NUMBER )
                 {
                     return false;
@@ -39,7 +60,7 @@ struct Bucket
             return false;
         }
         
-        m_nodes.push_back( &candidateKey );
+        m_nodes.emplace_back( NodeInfo{&candidateKey, nodeIndex} );
         return true;
     }
 
@@ -49,43 +70,70 @@ struct Bucket
         
         for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )
         {
-            if ( (*it)->m_key == searchedKey.m_key )
+            if ( it->m_ptr->m_key == searchedKey.m_key )
             {
                 return true;
             }
         }
         return false;
     }
-    
-    bool findNodeKey( const NodeKey& searchedKey, ClosestNodes& closestNodes, bool addRequester )
+
+    bool findNode( const NodeKey& searchedKey )
     {
-        // test that searchKey is present
+        //LOG( "bucket2 this: " << this );
         for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )
         {
-            if ( (*it)->m_key == searchedKey.m_key )
+            if ( it->m_ptr->m_key == searchedKey.m_key )
             {
                 return true;
             }
         }
-        
-        auto initialVectorSize = closestNodes.size();
-        
-        //TODO
+        return false;
+    }
+
+    bool tryToAddNodeKey( const NodeKey& requesterNodeKey, int index )
+    {
+        if ( m_nodes.size() < CLOSEST_NODES_CAPACITY )
+        {
+            for( auto& nodeInfo : m_nodes )
+            {
+                if ( nodeInfo.m_ptr->m_key == requesterNodeKey.m_key )
+                {
+                    return false;
+                }
+            }
+
+            m_nodes.push_back( NodeInfo{ &requesterNodeKey, index } );
+            return true;
+        }
+
+        return false;
+    }
+
+    bool findNodeKey( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes )
+    {
         for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )
         {
-            if ( closestNodes.size() < initialVectorSize + CLOSEST_NODES_NUMBER )
+            if ( it->m_ptr->m_key == searchedNodeKey.m_key )
             {
-                closestNodes.push_back( *it );
-            }
-            else
-            {
-                break;
+                return true;
             }
         }
 
-        if ( addRequester && (m_nodes.size() < CLOSEST_NODES_CAPACITY) )
+        //
+        // Add candidates to 'closestNodes'
+        //
+        auto initialVectorSize = closestNodes.size();
+        
+        //TODO: random
+        for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )
         {
-            m_nodes.push_back( &searchedKey );
+            if ( closestNodes.size() >= initialVectorSize + CLOSEST_NODES_NUMBER )
+            {
+                return false;
+            }
+            
+            closestNodes.push_back( it->m_ptr );
         }
         
         return false;
