@@ -50,13 +50,13 @@ void makeSwarm( Swarm& swarm, size_t swarmSize )
     {
         //LOG( "\nIteration: " << i )
         swarm.performIteration();
-        //swarm.calcStatictic();
+        //swarm.calcStatistic();
         //swarm.testCompleteness();
         
         if ( (i+1)%100 == 0 )
         {
             LOG( "\nIteration: " << i )
-            swarm.calcStatictic();
+            swarm.calcStatistic();
             
             //            auto emptyCounter = swarm.testFullCompleteness();
             //            LOG( "emptyCounter: " << emptyCounter );
@@ -67,7 +67,7 @@ void makeSwarm( Swarm& swarm, size_t swarmSize )
 
     swarm.performX();
     swarm.performIteration();
-    swarm.calcStatictic();
+    swarm.calcStatistic();
     calcCompleteness( swarm );
 
     auto endTime = std::chrono::high_resolution_clock::now();
@@ -101,7 +101,7 @@ void runTest( Swarm& swarm )
     swarm.addNewParticipants(NEW_NODE_NUMBER);
     
     swarm.testNewNodes(NEW_NODE_NUMBER);
-    swarm.calcStatictic();
+    swarm.calcStatistic();
     
     auto endTime = std::chrono::high_resolution_clock::now();
     auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);

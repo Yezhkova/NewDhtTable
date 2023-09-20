@@ -82,11 +82,11 @@ public:
     }
 
     // return -1 or backet index
-    bool justFind( const NodeKey& searchedNodeKey, int& backetIndex, bool& isFull )
+    bool justFind(const NodeKey& searchedNodeKey, int& bucketIndex, bool& isFull )
     {
-        backetIndex = calcIndex( searchedNodeKey );
+        bucketIndex = calcIndex(searchedNodeKey );
 
-        if ( m_buckets[backetIndex].justFindNode( searchedNodeKey, isFull ) )
+        if ( m_buckets[bucketIndex].justFindNode(searchedNodeKey, isFull ) )
         {
             return true;
         }
