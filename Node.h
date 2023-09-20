@@ -15,11 +15,19 @@ class Node : public NodeKey, public NodeStatistic
     int m_index;
     
     std::array<Bucket,BUCKET_SIZE> m_buckets;
+    
+//public:
+//    char m_map[SWARM_SIZE];
 
 public:
     Node(){}
 
-    Node( int index, const Key& key ) { m_index = index, m_key = key; }
+    Node( int index, const Key& key )
+    {
+        m_index = index;
+        m_key = key;
+//        std::memset( m_map, '-', SWARM_SIZE);
+    }
 
     const Key& key() const { return m_key; }
 
@@ -138,14 +146,14 @@ public:
     {
         m_requestNumber = 0;
         
-        for( auto it = closestNodes.begin(); it != closestNodes.end(); it++ )
+        for( size_t i=0; i<closestNodes.size(); i++ )
         {
             if ( ++m_requestNumber > MAX_FIND_COUNTER )
             {
                 return false;
             }
 
-            Node& closestNode = *((Node*)*it);
+            Node& closestNode = (Node&) *closestNodes[i];
             
             if ( closestNode.privateFindNode( searchedNodeKey, closestNodes, requesterKey ) )
             {

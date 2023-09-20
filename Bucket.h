@@ -93,21 +93,21 @@ struct Bucket
 
     bool tryToAddNodeKey( const NodeKey& requesterNodeKey, int index )
     {
-        if ( m_nodes.size() < CLOSEST_NODES_CAPACITY )
+        if ( m_nodes.size() >= CLOSEST_NODES_CAPACITY )
         {
-            for( auto& nodeInfo : m_nodes )
-            {
-                if ( nodeInfo.m_ptr->m_key == requesterNodeKey.m_key )
-                {
-                    return false;
-                }
-            }
-
-            m_nodes.push_back( NodeInfo{ &requesterNodeKey, index } );
-            return true;
+            return false;
         }
 
-        return false;
+        for( auto& nodeInfo : m_nodes )
+        {
+            if ( nodeInfo.m_ptr->m_key == requesterNodeKey.m_key )
+            {
+                return false;
+            }
+        }
+
+        m_nodes.push_back( NodeInfo{ &requesterNodeKey, index } );
+        return true;
     }
 
     bool findNodeKey( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes )
