@@ -90,23 +90,21 @@ void loadSwarm( Swarm& swarm )
     std::ifstream os( "swarm.bin", std::ios::binary );
     cereal::BinaryInputArchive archive( os );
     archive( swarm );
-
-    swarm.restorePointers(NEW_NODE_NUMBER);
 }
 
-void runTest( Swarm& swarm )
-{
-    auto startTime = std::chrono::high_resolution_clock::now();
-    
-    swarm.addNewParticipants(NEW_NODE_NUMBER);
-    
-    swarm.testNewNodes(NEW_NODE_NUMBER);
-    swarm.calcStatistic();
-    
-    auto endTime = std::chrono::high_resolution_clock::now();
-    auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
-    LOG( "Test execution time: " << durationMs.count()/1000 << "." << durationMs.count()%1000 << " seconds." );
-}
+//void runTest( Swarm& swarm )
+//{
+//    auto startTime = std::chrono::high_resolution_clock::now();
+//
+//    swarm.addNewParticipants(NEW_NODE_NUMBER);
+//
+//    swarm.testNewNodes(NEW_NODE_NUMBER);
+//    swarm.calcStatistic();
+//
+//    auto endTime = std::chrono::high_resolution_clock::now();
+//    auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+//    LOG( "Test execution time: " << durationMs.count()/1000 << "." << durationMs.count()%1000 << " seconds." );
+//}
 
 int main()
 {

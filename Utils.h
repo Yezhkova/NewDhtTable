@@ -16,6 +16,8 @@
 using Key = uint64_t;
 //using Key = std::array<uint8_t,20>;
 
+using NodeIndex = uint32_t;
+
 struct NodeKey
 {
     Key    m_key;
