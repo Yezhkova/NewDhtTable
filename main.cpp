@@ -65,10 +65,10 @@ void makeSwarm( Swarm& swarm, size_t swarmSize )
         
     }
 
-    swarm.performX();
-    swarm.performIteration();
-    swarm.calcStatistic();
-    calcCompleteness( swarm );
+//    swarm.performX();
+//    swarm.performIteration();
+//    swarm.calcStatistic();
+//    calcCompleteness( swarm );
 
     auto endTime = std::chrono::high_resolution_clock::now();
     auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);

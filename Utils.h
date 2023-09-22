@@ -42,6 +42,55 @@ inline bool gHideLog = false;
     }
 #endif
 
+inline int equalPrefixLength2( const Key& a, const Key& b )
+{
+    unsigned char* aBytes = (unsigned char*) &a;
+    unsigned char* bBytes = (unsigned char*) &b;
+
+    int len = 0;
+    int j = 0;
+    for(; (j < sizeof(Key)) && aBytes[j] == bBytes[j]; ++j)
+    {
+        len += 8;
+    }
+
+    if ( j < sizeof(Key) )
+    {
+        unsigned char aByte = aBytes[j];
+        unsigned char bByte = bBytes[j];
+        for( int i = 7; (((aByte >> i)&1) == ((bByte >> i)&1)) && i >= 0; --i)
+        {
+            ++len;
+        }
+    }
+    return len;
+}
+
+
+inline int equalPrefixLength( const Key& a, const Key& b )
+{
+    static_assert( sizeof(Key) <= 8 );
+    
+    Key xValue = a ^ b;
+    Key mask = 0xFF00000000000000;
+
+    int len = 0;
+    while( (len < sizeof(Key)*8) && (xValue&0xFF00000000000000)==0 )
+    {
+        xValue = xValue<<8;
+        len += 8;
+    }
+
+    while( (len < sizeof(Key)*8) && (xValue&0x8000000000000000)==0 )
+    {
+        xValue = xValue<<1;
+        ++len;
+    }
+
+    return len;
+}
+
+
 
 namespace Utils
 {

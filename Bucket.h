@@ -37,7 +37,7 @@ public:
     
     bool empty() const { return m_nodes.empty(); }
     
-    bool justFindNode( const NodeKey& searchedKey, bool& isFull )
+    bool justFindNode( const NodeKey& searchedKey, bool& isFull ) const
     {
         isFull = m_nodes.size() >= CLOSEST_NODES_CAPACITY;
         
@@ -49,7 +49,7 @@ public:
         return false;
     }
 
-    bool findNode( const NodeKey& searchedKey )
+    bool findNode( const NodeKey& searchedKey ) const
     {
         for( auto& nodeInfo : m_nodes )
         {
@@ -59,47 +59,43 @@ public:
         return false;
     }
 
-    bool tryToAddNodeInfo( const NodeKey& requesterNodeKey, NodeIndex index )
+    inline void tryToAddNodeInfo( const NodeKey& requesterNodeKey, NodeIndex index )
     {
-        if ( m_nodes.size() >= CLOSEST_NODES_CAPACITY )
+        if ( m_nodes.size() < CLOSEST_NODES_CAPACITY )
         {
-            return false;
+            for( auto& nodeInfo : m_nodes )
+            {
+                if ( nodeInfo.m_key == requesterNodeKey.m_key )
+                    return;
+            }
+            
+            m_nodes.push_back( NodeInfo{ requesterNodeKey.m_key, index } );
         }
-
-        for( auto& nodeInfo : m_nodes )
-        {
-            if ( nodeInfo.m_key == requesterNodeKey.m_key )
-                return false;
-        }
-
-        m_nodes.push_back( NodeInfo{ requesterNodeKey.m_key, index } );
-        return true;
     }
 
-    bool findNodeKeyAndFillClosestNodes( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes )
+    inline bool findNodeKey( const NodeKey& searchedNodeKey ) const
     {
         for( auto& nodeInfo : m_nodes )
         {
             if ( nodeInfo.m_key == searchedNodeKey.m_key )
                 return true;
         }
+        return false;
+    }
 
-        //
-        // Add candidates to 'closestNodes'
-        //
-        size_t closestNodeCounter = 0;
-        
+    inline void addClosestNodes( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes, size_t& addedClosestNodeCounter ) const
+    {
         //TODO: random
         for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )
         {
-            if ( closestNodeCounter >= CLOSEST_NODES_NUMBER )
-                return false;
+            if ( addedClosestNodeCounter >= CLOSEST_NODES_NUMBER )
+            {
+                return;
+            }
             
-            closestNodeCounter++;
+            addedClosestNodeCounter++;
             closestNodes.push_back( it->m_nodeIndex );
         }
-        
-        return false;
     }
 };
 

@@ -46,31 +46,7 @@ public:
     
     int calcBucketIndex( const NodeKey& candidate ) const
     {
-        return equalPrefixLength( *this, candidate );
-    }
-    
-    int equalPrefixLength( const NodeKey& a, const NodeKey& b ) const
-    {
-        unsigned char* aBytes = (unsigned char*) &a.m_key;
-        unsigned char* bBytes = (unsigned char*) &b.m_key;
-
-        int len = 0;
-        int j = 0;
-        for(; (j < sizeof(Key)) && aBytes[j] == bBytes[j]; ++j)
-        {
-            len += 8;
-        }
-
-        if ( j < sizeof(Key) )
-        {
-            unsigned char aByte = aBytes[j];
-            unsigned char bByte = bBytes[j];
-            for( int i = 7; (((aByte >> i)&1) == ((bByte >> i)&1)) && i >= 0; --i)
-            {
-                ++len;
-            }
-        }
-        return len;
+        return equalPrefixLength( this->m_key, candidate.m_key );
     }
 
     bool justFind( const NodeKey& searchedNodeKey, int& bucketIndex, bool& isFull )
@@ -96,15 +72,26 @@ public:
             // Alway try to add requester to my 'Buckets'
             //
             int index = calcBucketIndex( requesterNode );
-            if ( m_buckets[index].tryToAddNodeInfo( requesterNode, requesterNode.m_index ) )
-            {
-                //LOG( "addeded: " << this << " to: " << m_index << " bucketIdx: " << index << " key: " << requesterNodeKey.m_key );
-            }
+            m_buckets[index].tryToAddNodeInfo( requesterNode, requesterNode.m_index );
         }
         
         int index = calcBucketIndex( searchedNodeKey );
         
-        return m_buckets[index].findNodeKeyAndFillClosestNodes( searchedNodeKey, closestNodes );
+        if ( m_buckets[index].findNodeKey( searchedNodeKey ) )
+        {
+            return true;
+        }
+        
+        size_t addedClosestNodeCounter = 0;
+        m_buckets[index].addClosestNodes( searchedNodeKey, closestNodes, addedClosestNodeCounter );
+        
+        while( addedClosestNodeCounter < CLOSEST_NODES_NUMBER && index > 0 )
+        {
+            index--;
+            m_buckets[index].addClosestNodes( searchedNodeKey, closestNodes, addedClosestNodeCounter );
+        }
+        
+        return false;
     }
     
     bool findNode( const NodeKey& searchedNodeKey, const Node& requesterNode )
@@ -118,17 +105,6 @@ public:
         {
             m_isFound = continueFindNode( searchedNodeKey, closestNodes, requesterNode );
         }
-  
-        //
-        // start find from bootstrap
-        //
-//        if ( ! m_isFound )
-//        {
-//            closestNodes.clear();
-//            closestNodes.reserve( MAX_FIND_COUNTER );
-//            m_buckets[0].findNodeKey( searchedNodeKey, closestNodes );
-//            m_isFound = continueFindNode( searchedNodeKey, closestNodes, requesterKey );
-//        }
         
         return m_isFound;
     }
@@ -144,17 +120,26 @@ public:
                 return false;
             }
 
-            Node* closestNode = (this-m_index) + closestNodes[i];
+            Node& closestNode = *((this-m_index) + closestNodes[i]);
             
-            if ( closestNode->privateFindNode( searchedNodeKey, closestNodes, requesterNode ) )
+            if ( closestNode.privateFindNode( searchedNodeKey, closestNodes, requesterNode ) )
             {
+                //addClosestNodeToBuckets( closestNode );
                 return true;
             }
+            //addClosestNodeToBuckets( closestNode );
         }
 
         return false;
     }
 
+    void addClosestNodeToBuckets( Node& closestNode )
+    {
+        int index = calcBucketIndex( closestNode );
+        
+        return m_buckets[index].tryToAddNodeInfo( closestNode, closestNode.m_index );
+    }
+    
     void testBucketCompleteness( Node& node, std::array<int,BUCKET_SIZE>& isBucketEmpty )
     {
         int index = calcBucketIndex( node );
