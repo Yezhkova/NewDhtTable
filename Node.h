@@ -124,7 +124,7 @@ public:
             
             if ( closestNode.privateFindNode( searchedNodeKey, closestNodes, requesterNode ) )
             {
-                //addClosestNodeToBuckets( closestNode );
+                addClosestNodeToBuckets( closestNode );
                 return true;
             }
             //addClosestNodeToBuckets( closestNode );

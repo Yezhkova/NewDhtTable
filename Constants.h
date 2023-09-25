@@ -5,7 +5,7 @@
 #pragma once
 
 const size_t SWARM_SIZE = 1000;
-const size_t ITER_NUMBER = 500;
+const size_t ITER_NUMBER = 100;
 const size_t CLOSEST_NODES_CAPACITY = 4;
 const size_t CLOSEST_NODES_NUMBER = 4;
 const size_t MAX_FIND_COUNTER = 2000;

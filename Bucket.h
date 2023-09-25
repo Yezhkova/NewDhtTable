@@ -49,7 +49,7 @@ public:
         return false;
     }
 
-    bool findNode( const NodeKey& searchedKey ) const
+    inline bool findNode( const NodeKey& searchedKey ) const
     {
         for( auto& nodeInfo : m_nodes )
         {
