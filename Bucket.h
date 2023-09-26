@@ -85,7 +85,7 @@ public:
 
     inline void addClosestNodes( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes, size_t& addedClosestNodeCounter ) const
     {
-        //TODO: random
+        //TODO: random/ordered
         for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )
         {
             if ( addedClosestNodeCounter >= CLOSEST_NODES_NUMBER )

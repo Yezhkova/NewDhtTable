@@ -160,6 +160,10 @@ public:
         
         for( auto& requester : m_nodes )
         {
+            if ( requester.index() == 0 )
+            {
+                continue;
+            }
             requester.prepareToIteration();
             
             int searchedNodeIndex;
