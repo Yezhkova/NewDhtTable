@@ -15,6 +15,6 @@ set( SRC_LIST
         Utils.h
         Constants.h)
         
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O")
 add_executable( KademplaProb ${SRC_LIST} )

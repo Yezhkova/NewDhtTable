@@ -82,22 +82,31 @@ public:
         }
         
         size_t addedClosestNodeCounter = 0;
-        m_buckets[index].addClosestNodes( searchedNodeKey, closestNodes, addedClosestNodeCounter );
-
-        auto i = index;
-        while( addedClosestNodeCounter < CLOSEST_NODES_NUMBER && i > 0 )
+        if ( closestNodes.size() < MAX_FIND_COUNTER )
         {
-            i--;
-            m_buckets[i].addClosestNodes( searchedNodeKey, closestNodes, addedClosestNodeCounter );
+            m_buckets[index].addClosestNodes( searchedNodeKey, closestNodes, addedClosestNodeCounter );
         }
         
-        i = index;
-        while( addedClosestNodeCounter < CLOSEST_NODES_NUMBER && i < m_buckets.size()-1 )
+        if ( closestNodes.size() < MAX_FIND_COUNTER )
         {
-            i++;
-            m_buckets[i].addClosestNodes( searchedNodeKey, closestNodes, addedClosestNodeCounter );
+            auto i = index;
+            while( addedClosestNodeCounter < CLOSEST_NODES_NUMBER && i > 0 )
+            {
+                i--;
+                m_buckets[i].addClosestNodes( searchedNodeKey, closestNodes, addedClosestNodeCounter );
+            }
         }
 
+        if ( closestNodes.size() < MAX_FIND_COUNTER )
+        {
+            auto i = index;
+            while( addedClosestNodeCounter < CLOSEST_NODES_NUMBER && i < m_buckets.size()-1 )
+            {
+                i++;
+                m_buckets[i].addClosestNodes( searchedNodeKey, closestNodes, addedClosestNodeCounter );
+            }
+        }
+        
         return false;
     }
     

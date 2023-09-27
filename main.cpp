@@ -64,7 +64,7 @@ void makeSwarm( Swarm& swarm, size_t swarmSize )
             
             //            auto emptyCounter = swarm.testFullCompleteness();
             //            LOG( "emptyCounter: " << emptyCounter );
-            calcCompleteness( swarm );
+            //calcCompleteness( swarm );
         }
     }
 
