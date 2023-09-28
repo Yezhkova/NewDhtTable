@@ -69,7 +69,7 @@ public:
         if ( requesterNode.m_key != m_key )
         {
             //
-            // Alway try to add requester to my 'Buckets'
+            // Always try to add requester to my 'Buckets'
             //
             int index = calcBucketIndex( requesterNode );
             m_buckets[index].tryToAddNodeInfo( requesterNode, requesterNode.m_index );

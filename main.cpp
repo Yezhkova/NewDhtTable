@@ -7,7 +7,6 @@
 
 int calcCompleteness( Swarm& swarm )
 {
-    const size_t THREAD_NUM = 12;
     const size_t NUM = SWARM_SIZE/THREAD_NUM;
     std::thread threads[THREAD_NUM];
     int emptyCounters[THREAD_NUM];
@@ -33,6 +32,7 @@ int calcCompleteness( Swarm& swarm )
     }
 
     LOG( "emptyCounter: " << emptyCounter );
+    return 0;
 }
 
 void makeSwarm( Swarm& swarm, size_t swarmSize )

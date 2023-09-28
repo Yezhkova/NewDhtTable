@@ -302,12 +302,12 @@ public:
 
             std::array<int,BUCKET_SIZE> isBucketEmpty{};
 
-            for( auto& candidatNode : m_nodes )
+            for( auto& candidateNode : m_nodes )
             {
-                if ( testNode.m_key == candidatNode.m_key )
+                if (testNode.m_key == candidateNode.m_key )
                     continue;
 
-                testNode.testBucketCompleteness( candidatNode, isBucketEmpty );
+                testNode.testBucketCompleteness(candidateNode, isBucketEmpty );
             }
             
             for( size_t i=0; i<isBucketEmpty.size(); i++ )

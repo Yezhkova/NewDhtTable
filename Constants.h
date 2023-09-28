@@ -9,6 +9,8 @@ const size_t ITER_NUMBER = 500;
 const size_t CLOSEST_NODES_CAPACITY = 4;
 const size_t CLOSEST_NODES_NUMBER = 4;
 const size_t MAX_FIND_COUNTER = 2000;
+const size_t THREAD_NUM = 12;
+
 
 // CONSTs are handled by the compiler, #DEFINEs are handled by the pre-processor.
 // The big advantage of const over #define is type checking.
