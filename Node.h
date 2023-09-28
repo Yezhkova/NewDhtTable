@@ -30,8 +30,7 @@ public:
     }
 
     const Key& key() const { return m_key; }
-
-    //void initByKey( const Key& key ) { m_key = key; } // why do we need this if this is identical to the constructor? +It is never used
+    int        index() const { return m_index; }
 
     template <class Archive>
     void serialize( Archive & ar )
@@ -83,12 +82,29 @@ public:
         }
         
         size_t addedClosestNodeCounter = 0;
-        m_buckets[index].addClosestNodes( searchedNodeKey, closestNodes, addedClosestNodeCounter );
-        
-        while( addedClosestNodeCounter < CLOSEST_NODES_NUMBER && index > 0 )
+        if ( closestNodes.size() < MAX_FIND_COUNTER )
         {
-            index--;
             m_buckets[index].addClosestNodes( searchedNodeKey, closestNodes, addedClosestNodeCounter );
+        }
+        
+        if ( closestNodes.size() < MAX_FIND_COUNTER )
+        {
+            auto i = index;
+            while( addedClosestNodeCounter < CLOSEST_NODES_NUMBER && i > 0 )
+            {
+                i--;
+                m_buckets[i].addClosestNodes( searchedNodeKey, closestNodes, addedClosestNodeCounter );
+            }
+        }
+
+        if ( closestNodes.size() < MAX_FIND_COUNTER )
+        {
+            auto i = index;
+            while( addedClosestNodeCounter < CLOSEST_NODES_NUMBER && i < m_buckets.size()-1 )
+            {
+                i++;
+                m_buckets[i].addClosestNodes( searchedNodeKey, closestNodes, addedClosestNodeCounter );
+            }
         }
         
         return false;
@@ -98,6 +114,12 @@ public:
     {
         ClosestNodes closestNodes;
         closestNodes.reserve( MAX_FIND_COUNTER );
+
+//        if ( ((Node&)searchedNodeKey).m_index == 44 && m_index == 33 )
+//        {
+//            LOG( "not found?: " << ((Node&)searchedNodeKey).m_index << " by: " << m_index <<  " cl_nd_sz: " << closestNodes.size());
+//        }
+
         
         m_isFound = privateFindNode( searchedNodeKey, closestNodes, requesterNode );
 
@@ -105,6 +127,17 @@ public:
         {
             m_isFound = continueFindNode( searchedNodeKey, closestNodes, requesterNode );
         }
+        
+//        if ( ! m_isFound )
+//        {
+//            std::set<Key> clNodeKeys;
+//            for( auto& clNodeKey: closestNodes )
+//            {
+//                clNodeKeys.insert( clNodeKey );
+//            }
+//            LOG( "not found: " << ((Node&)searchedNodeKey).m_index << " by: " << m_index <<  " cl_nd_sz: " << clNodeKeys.size());
+//            LOG( "(2) not found: " << ((Node&)searchedNodeKey).m_index << " by: " << m_index <<  " cl_nd_sz: " << clNodeKeys.size());
+//        }
         
         return m_isFound;
     }
@@ -127,7 +160,7 @@ public:
                 //addClosestNodeToBuckets( closestNode );
                 return true;
             }
-            //addClosestNodeToBuckets( closestNode );
+            addClosestNodeToBuckets( closestNode );
         }
 
         return false;

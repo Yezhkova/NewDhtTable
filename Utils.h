@@ -72,7 +72,6 @@ inline int equalPrefixLength( const Key& a, const Key& b )
     static_assert( sizeof(Key) <= 8 );
     
     Key xValue = a ^ b;
-    Key mask = 0xFF00000000000000;
 
     int len = 0;
     while( (len < sizeof(Key)*8) && (xValue&0xFF00000000000000)==0 )

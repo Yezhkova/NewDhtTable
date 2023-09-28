@@ -46,6 +46,10 @@ void makeSwarm( Swarm& swarm, size_t swarmSize )
     swarm.colonize();
     LOG( "colonized" );
     
+//    swarm.performX();
+//    swarm.performIteration();
+//    swarm.calcStatistic();
+
     for( int i=0; i<ITER_NUMBER; i++ )
     {
         //LOG( "\nIteration: " << i )
@@ -53,21 +57,21 @@ void makeSwarm( Swarm& swarm, size_t swarmSize )
         //swarm.calcStatistic();
         //swarm.testCompleteness();
         
-        if ( (i+1)%100 == 0 )
+//        if ( (i+1)%100 == 0 )
         {
             LOG( "\nIteration: " << i )
             swarm.calcStatistic();
             
             //            auto emptyCounter = swarm.testFullCompleteness();
             //            LOG( "emptyCounter: " << emptyCounter );
-                        calcCompleteness( swarm );
+            //calcCompleteness( swarm );
         }
-        
     }
 
 //    swarm.performX();
 //    swarm.performIteration();
 //    swarm.calcStatistic();
+//
 //    calcCompleteness( swarm );
 
     auto endTime = std::chrono::high_resolution_clock::now();

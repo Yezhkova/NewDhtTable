@@ -6,7 +6,21 @@
 #include "Utils.h"
 #include "Constants.h"
 
-using ClosestNodes = std::vector<NodeIndex>;
+//using ClosestNodes = std::vector<NodeIndex>;
+
+struct ClosestNodes
+{
+    NodeIndex   m_nodeIndexes[MAX_FIND_COUNTER+CLOSEST_NODES_NUMBER];
+    size_t      m_size = 0;
+    
+    ClosestNodes() {}
+    
+    void push_back( NodeIndex i ) { assert(m_size<MAX_FIND_COUNTER+CLOSEST_NODES_NUMBER); m_nodeIndexes[m_size] = i; m_size++; }
+    size_t size() const { return m_size; }
+    void reserve( size_t ) {}
+    
+    NodeIndex& operator[](size_t i) { return m_nodeIndexes[i]; }
+};
 
 class Bucket
 {
@@ -49,7 +63,7 @@ public:
         return false;
     }
 
-    bool findNode( const NodeKey& searchedKey ) const
+    inline bool findNode( const NodeKey& searchedKey ) const
     {
         for( auto& nodeInfo : m_nodes )
         {
@@ -85,7 +99,7 @@ public:
 
     inline void addClosestNodes( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes, size_t& addedClosestNodeCounter ) const
     {
-        //TODO: random
+        //TODO: random/ordered
         for( auto it = m_nodes.begin(); it != m_nodes.end(); it++ )
         {
             if ( addedClosestNodeCounter >= CLOSEST_NODES_NUMBER )
