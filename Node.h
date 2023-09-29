@@ -3,6 +3,7 @@
 #include <vector>
 #include <deque>
 #include <array>
+#include <set>
 
 #include "Bucket.h"
 #include "NodeStatistic.h"
@@ -10,11 +11,25 @@
 
 const size_t BUCKET_SIZE = sizeof(Key)*8; // 8 bits per byte
 
+
+
 class Node : public NodeKey, public NodeStatistic
 {
     int m_index;
     
     std::array<Bucket,BUCKET_SIZE> m_buckets;
+
+#ifdef USE_CLOSEST_NODES_SET
+    struct ClosestNodeInfo
+    {
+        Key m_key;
+        int m_index;
+        bool operator<( const ClosestNodeInfo& nodeInfo ) const { return m_key < nodeInfo.m_key; }
+        bool operator==( const ClosestNodeInfo& nodeInfo ) const { return m_key == nodeInfo.m_key; }
+    };
+    std::set<ClosestNodeInfo> m_candidateSet;
+    std::set<Key>             m_usedCandidates;
+#endif
     
 //public:
 //    char m_map[SWARM_SIZE];
@@ -110,10 +125,14 @@ public:
         return false;
     }
     
-    bool findNode( const NodeKey& searchedNodeKey, const Node& requesterNode )
+    bool findNode( const NodeKey& searchedNodeKey, const Node& requesterNode, bool enterToSwarm = false )
     {
         ClosestNodes closestNodes;
         closestNodes.reserve( MAX_FIND_COUNTER );
+#ifdef USE_CLOSEST_NODES_SET
+        m_candidateSet.clear();
+        m_usedCandidates.clear();
+#endif
 
 //        if ( ((Node&)searchedNodeKey).m_index == 44 && m_index == 33 )
 //        {
@@ -125,7 +144,14 @@ public:
 
         if ( ! m_isFound )
         {
-            m_isFound = continueFindNode( searchedNodeKey, closestNodes, requesterNode );
+            if ( enterToSwarm )
+            {
+                m_isFound = ((Node&)requesterNode).continueFindNode( searchedNodeKey, closestNodes, requesterNode );
+            }
+            else
+            {
+                m_isFound = continueFindNode( searchedNodeKey, closestNodes, requesterNode );
+            }
         }
         
 //        if ( ! m_isFound )
@@ -146,6 +172,38 @@ public:
     {
         m_requestCounter = 0;
         
+#ifdef USE_CLOSEST_NODES_SET
+        while( ++m_requestCounter <= MAX_FIND_COUNTER )
+        {
+            for( size_t i=0; i<closestNodes.size(); i++ )
+            {
+                Node& closestNode = *((this-m_index) + closestNodes[i]);
+                if ( ! m_usedCandidates.contains( closestNode.m_key ) )
+                {
+                    m_candidateSet.emplace( ClosestNodeInfo{ closestNode.m_key ^ searchedNodeKey.m_key, closestNode.m_index } );
+                }
+            }
+            closestNodes.reset();
+            
+            if ( m_candidateSet.empty() )
+            {
+                return false;
+            }
+
+            ClosestNodeInfo info = * m_candidateSet.begin();
+            m_candidateSet.erase( m_candidateSet.begin() );
+            m_usedCandidates.emplace( info.m_key ^ searchedNodeKey.m_key );
+            
+            Node& closestNode = *((this-m_index) + info.m_index);
+
+            if ( closestNode.privateFindNode( searchedNodeKey, closestNodes, requesterNode ) )
+            {
+                //addClosestNodeToBuckets( closestNode );
+                return true;
+            }
+            addClosestNodeToBuckets( closestNode );
+        }
+#else
         for( size_t i=0; i<closestNodes.size(); i++ )
         {
             if ( ++m_requestCounter > MAX_FIND_COUNTER )
@@ -154,7 +212,7 @@ public:
             }
 
             Node& closestNode = *((this-m_index) + closestNodes[i]);
-            
+
             if ( closestNode.privateFindNode( searchedNodeKey, closestNodes, requesterNode ) )
             {
                 //addClosestNodeToBuckets( closestNode );
@@ -162,15 +220,18 @@ public:
             }
             addClosestNodeToBuckets( closestNode );
         }
-
+#endif
+        
         return false;
     }
 
     void addClosestNodeToBuckets( Node& closestNode )
     {
         int index = calcBucketIndex( closestNode );
-        
-        return m_buckets[index].tryToAddNodeInfo( closestNode, closestNode.m_index );
+        if ( index < sizeof(m_buckets)/sizeof(m_buckets[0]) )
+        {
+            m_buckets[index].tryToAddNodeInfo( closestNode, closestNode.m_index );
+        }
     }
     
     void testBucketCompleteness( Node& node, std::array<int,BUCKET_SIZE>& isBucketEmpty )

@@ -146,7 +146,7 @@ public:
             it->findNode( bootstrapNode(), bootstrapNode() );
             
             // add me to swarm
-            bootstrapNode().findNode( *it, *it );
+            bootstrapNode().findNode( *it, *it, true );
         }
     }
     

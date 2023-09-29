@@ -18,7 +18,8 @@ struct ClosestNodes
     void push_back( NodeIndex i ) { assert(m_size<MAX_FIND_COUNTER+CLOSEST_NODES_NUMBER); m_nodeIndexes[m_size] = i; m_size++; }
     size_t size() const { return m_size; }
     void reserve( size_t ) {}
-    
+    void reset() { m_size = 0; }
+
     NodeIndex& operator[](size_t i) { return m_nodeIndexes[i]; }
 };
 

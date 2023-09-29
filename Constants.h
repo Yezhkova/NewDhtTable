@@ -4,11 +4,15 @@
 
 #pragma once
 
-const size_t SWARM_SIZE = 10000;
+#define USE_CLOSEST_NODES_SET
+
+const size_t SWARM_SIZE = 100000;
 const size_t ITER_NUMBER = 100;
 const size_t CLOSEST_NODES_CAPACITY = 4;
-const size_t CLOSEST_NODES_NUMBER = 4;
+const size_t CLOSEST_NODES_NUMBER = 2;
+
 const size_t MAX_FIND_COUNTER = 2000;
+
 const size_t THREAD_NUM = 12;
 
 
