@@ -127,7 +127,12 @@ public:
     
     void enterToSwarm( Node& bootstrapNode, bool enterToSwarm = false )
     {
-        bootstrapNode.findNode( *this, *this, true );
+        ClosestNodes closestNodes;
+
+        // query 'bootstrapNode' for closest node list
+        bootstrapNode.privateFindNode( *this, closestNodes, *this );
+
+        continueFindNode( *this, closestNodes, *this );
     }
     
     bool findNode( const NodeKey& searchedNodeKey, Node& requesterNode, bool enterToSwarm = false )
