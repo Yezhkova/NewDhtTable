@@ -125,7 +125,12 @@ public:
         return false;
     }
     
-    bool findNode( const NodeKey& searchedNodeKey, const Node& requesterNode, bool enterToSwarm = false )
+    void enterToSwarm( Node& bootstrapNode, bool enterToSwarm = false )
+    {
+        bootstrapNode.findNode( *this, *this, true );
+    }
+    
+    bool findNode( const NodeKey& searchedNodeKey, Node& requesterNode, bool enterToSwarm = false )
     {
         ClosestNodes closestNodes;
         closestNodes.reserve( MAX_FIND_COUNTER );
@@ -146,7 +151,7 @@ public:
         {
             if ( enterToSwarm )
             {
-                m_isFound = ((Node&)requesterNode).continueFindNode( searchedNodeKey, closestNodes, requesterNode );
+                m_isFound = requesterNode.continueFindNode( searchedNodeKey, closestNodes, requesterNode );
             }
             else
             {
@@ -168,7 +173,7 @@ public:
         return m_isFound;
     }
 
-    bool continueFindNode( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes, const Node& requesterNode )
+    bool continueFindNode( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes, Node& requesterNode )
     {
         m_requestCounter = 0;
         

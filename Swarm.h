@@ -145,8 +145,8 @@ public:
             // add bootstrap node to my buckets
             it->findNode( bootstrapNode(), bootstrapNode() );
             
-            // add me to swarm
-            bootstrapNode().findNode( *it, *it, true );
+            // enter to swarm
+            it->enterToSwarm( bootstrapNode() );
         }
     }
     
