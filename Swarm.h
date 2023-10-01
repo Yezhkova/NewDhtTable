@@ -143,8 +143,8 @@ public:
         for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
         {
             // add bootstrap node to my buckets
-            it->findNode( bootstrapNode(), bootstrapNode() );
-            
+            it->addNodeToBuckets( bootstrapNode() );
+
             // enter to swarm
             it->enterToSwarm( bootstrapNode() );
         }

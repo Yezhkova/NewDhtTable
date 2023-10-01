@@ -123,6 +123,13 @@ public:
         continueFindNode( *this, closestNodes, *this );
     }
     
+    inline bool addNodeToBuckets( const Node& node )
+    {
+        assert( node.m_key != m_key );
+        int index = calcBucketIndex( node );
+        m_buckets[index].tryToAddNodeInfo( node, node.m_index );
+    }
+    
     bool findNode( const NodeKey& searchedNodeKey, Node& requesterNode, bool enterToSwarm = false )
     {
         ClosestNodes closestNodes;
