@@ -15,20 +15,13 @@ const size_t BUCKET_SIZE = sizeof(Key)*8; // 8 bits per byte
 
 class Node : public NodeKey, public NodeStatistic
 {
-    int m_index;
+    NodeIndex m_index;
     
     std::array<Bucket,BUCKET_SIZE> m_buckets;
 
 #ifdef USE_CLOSEST_NODES_SET
-    struct ClosestNodeInfo
-    {
-        Key m_key;
-        int m_index;
-        bool operator<( const ClosestNodeInfo& nodeInfo ) const { return m_key < nodeInfo.m_key; }
-        bool operator==( const ClosestNodeInfo& nodeInfo ) const { return m_key == nodeInfo.m_key; }
-    };
-    std::set<ClosestNodeInfo> m_candidateSet;
-    std::set<Key>             m_usedCandidates;
+    std::set<NodeInfo>  m_candidateSet;
+    std::set<Key>       m_usedCandidates;
 #endif
     
 //public:
@@ -97,12 +90,8 @@ public:
         }
         
         size_t addedClosestNodeCounter = 0;
-        if ( closestNodes.size() < MAX_FIND_COUNTER )
-        {
-            m_buckets[index].addClosestNodes( searchedNodeKey, closestNodes, addedClosestNodeCounter );
-        }
+        m_buckets[index].addClosestNodes( searchedNodeKey, closestNodes, addedClosestNodeCounter );
         
-        if ( closestNodes.size() < MAX_FIND_COUNTER )
         {
             auto i = index;
             while( addedClosestNodeCounter < CLOSEST_NODES_NUMBER && i > 0 )
@@ -112,7 +101,6 @@ public:
             }
         }
 
-        if ( closestNodes.size() < MAX_FIND_COUNTER )
         {
             auto i = index;
             while( addedClosestNodeCounter < CLOSEST_NODES_NUMBER && i < m_buckets.size()-1 )
@@ -138,7 +126,6 @@ public:
     bool findNode( const NodeKey& searchedNodeKey, Node& requesterNode, bool enterToSwarm = false )
     {
         ClosestNodes closestNodes;
-        closestNodes.reserve( MAX_FIND_COUNTER );
 #ifdef USE_CLOSEST_NODES_SET
         m_candidateSet.clear();
         m_usedCandidates.clear();
@@ -185,26 +172,27 @@ public:
 #ifdef USE_CLOSEST_NODES_SET
         while( ++m_requestCounter <= MAX_FIND_COUNTER )
         {
+            assert( closestNodes.size() <= CLOSEST_NODES_NUMBER );
             for( size_t i=0; i<closestNodes.size(); i++ )
             {
                 Node& closestNode = *((this-m_index) + closestNodes[i]);
                 if ( ! m_usedCandidates.contains( closestNode.m_key ) )
                 {
-                    m_candidateSet.emplace( ClosestNodeInfo{ closestNode.m_key ^ searchedNodeKey.m_key, closestNode.m_index } );
+                    m_candidateSet.emplace( NodeInfo{ closestNode.m_key ^ searchedNodeKey.m_key, closestNode.m_index } );
                 }
             }
-            closestNodes.reset();
+            closestNodes.clear();
             
             if ( m_candidateSet.empty() )
             {
                 return false;
             }
 
-            ClosestNodeInfo info = * m_candidateSet.begin();
+            NodeInfo info = * m_candidateSet.begin();
             m_candidateSet.erase( m_candidateSet.begin() );
             m_usedCandidates.emplace( info.m_key ^ searchedNodeKey.m_key );
             
-            Node& closestNode = *((this-m_index) + info.m_index);
+            Node& closestNode = *((this-m_index) + info.m_nodeIndex);
 
             if ( closestNode.privateFindNode( searchedNodeKey, closestNodes, requesterNode ) )
             {
