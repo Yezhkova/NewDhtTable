@@ -65,7 +65,7 @@ public:
         return false;
     }
 
-    inline bool findNode( const NodeKey& searchedKey ) const
+    inline bool findNodeInBucket( const NodeKey& searchedKey ) const
     {
         for( auto& nodeInfo : m_nodes )
         {

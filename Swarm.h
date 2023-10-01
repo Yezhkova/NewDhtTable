@@ -174,7 +174,7 @@ public:
                 
             auto& searchedNode = m_nodes[searchedNodeIndex];
             
-            requester.findNode( searchedNode, requester );
+            requester.findNode( searchedNode );
             //assert( bootstrapNode().findNode( searchedNode, requester ) );
             //requester.m_map[randomNodeIndex] = '+';
             
@@ -189,15 +189,15 @@ public:
             NodeKey key = *it;
             //key.m_key = key.m_key ^ 0x8000000000000000;
             key.m_key = key.m_key ^ 0x1;
-            bootstrapNode().findNode( key, *it );
+            it->findNode( key );
         }
 
-        for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
-        {
-            NodeKey key = *it;
-            key.m_key = key.m_key ^ 0xFFFFFFFFFFFFFFFF;
-            bootstrapNode().findNode( key, *it );
-        }
+//        for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
+//        {
+//            NodeKey key = *it;
+//            key.m_key = key.m_key ^ 0xFFFFFFFFFFFFFFFF;
+//            it->findNode( key, *it );
+//        }
 
 //        for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
 //        {

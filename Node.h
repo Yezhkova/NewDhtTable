@@ -67,7 +67,7 @@ public:
     {
         int index = calcBucketIndex( searchedNodeKey );
         //LOG( " this: " << this << " b_index: " << index << " key: " << searchedNodeKey.m_key )
-        return m_buckets[index].findNode(searchedNodeKey);
+        return m_buckets[index].findNodeInBucket(searchedNodeKey);
     }
 
     bool privateFindNode( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes, const Node& requesterNode )
@@ -120,7 +120,7 @@ public:
         // query 'bootstrapNode' for closest node list
         bootstrapNode.privateFindNode( *this, closestNodes, *this );
 
-        continueFindNode( *this, closestNodes, *this );
+        continueFindNode( *this, closestNodes );
     }
     
     inline bool addNodeToBuckets( const Node& node )
@@ -130,7 +130,7 @@ public:
         m_buckets[index].tryToAddNodeInfo( node, node.m_index );
     }
     
-    bool findNode( const NodeKey& searchedNodeKey, Node& requesterNode, bool enterToSwarm = false )
+    bool findNode( const NodeKey& searchedNodeKey )
     {
         ClosestNodes closestNodes;
 #ifdef USE_CLOSEST_NODES_SET
@@ -138,41 +138,17 @@ public:
         m_usedCandidates.clear();
 #endif
 
-//        if ( ((Node&)searchedNodeKey).m_index == 44 && m_index == 33 )
-//        {
-//            LOG( "not found?: " << ((Node&)searchedNodeKey).m_index << " by: " << m_index <<  " cl_nd_sz: " << closestNodes.size());
-//        }
-
-        
-        m_isFound = privateFindNode( searchedNodeKey, closestNodes, requesterNode );
+        m_isFound = privateFindNode( searchedNodeKey, closestNodes, *this );
 
         if ( ! m_isFound )
         {
-            if ( enterToSwarm )
-            {
-                m_isFound = requesterNode.continueFindNode( searchedNodeKey, closestNodes, requesterNode );
-            }
-            else
-            {
-                m_isFound = continueFindNode( searchedNodeKey, closestNodes, requesterNode );
-            }
+            m_isFound = continueFindNode( searchedNodeKey, closestNodes );
         }
-        
-//        if ( ! m_isFound )
-//        {
-//            std::set<Key> clNodeKeys;
-//            for( auto& clNodeKey: closestNodes )
-//            {
-//                clNodeKeys.insert( clNodeKey );
-//            }
-//            LOG( "not found: " << ((Node&)searchedNodeKey).m_index << " by: " << m_index <<  " cl_nd_sz: " << clNodeKeys.size());
-//            LOG( "(2) not found: " << ((Node&)searchedNodeKey).m_index << " by: " << m_index <<  " cl_nd_sz: " << clNodeKeys.size());
-//        }
         
         return m_isFound;
     }
 
-    bool continueFindNode( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes, Node& requesterNode )
+    bool continueFindNode( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes )
     {
         m_requestCounter = 0;
         
@@ -201,7 +177,7 @@ public:
             
             Node& closestNode = *((this-m_index) + info.m_nodeIndex);
 
-            if ( closestNode.privateFindNode( searchedNodeKey, closestNodes, requesterNode ) )
+            if ( closestNode.privateFindNode( searchedNodeKey, closestNodes, *this ) )
             {
                 //addClosestNodeToBuckets( closestNode );
                 return true;
