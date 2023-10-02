@@ -57,14 +57,16 @@ void makeSwarm( Swarm& swarm, size_t swarmSize )
         //swarm.calcStatistic();
         //swarm.testCompleteness();
         
-//        if ( (i+1)%100 == 0 )
+        //if ( (i+1)%100 == 0 )
         {
             LOG( "\nIteration: " << i )
             swarm.calcStatistic();
             
             //            auto emptyCounter = swarm.testFullCompleteness();
             //            LOG( "emptyCounter: " << emptyCounter );
-            //calcCompleteness( swarm );
+//            calcCompleteness( swarm );
+//            swarm.performAllToAll();
+//            calcCompleteness( swarm );
         }
     }
 

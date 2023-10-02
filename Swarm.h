@@ -39,6 +39,11 @@ public:
             std::array<uint8_t,sizeof(Key)> buffer{};
         };
         
+#ifdef USE_RAND_SEED
+        std::random_device device;
+        gRandomGenerator.seed( device() );
+#endif
+
         std::set<Key> keySet;
         
         for( int i=0; i<SWARM_SIZE; )
@@ -154,7 +159,13 @@ public:
     {
         assert( m_nodes.size() > 0 );
 
+#ifdef USE_RAND_SEED
         std::uniform_int_distribution<> range(1, SWARM_SIZE-1);
+        std::random_device device;
+        gRandomGenerator.seed( device() );
+#else
+        std::uniform_int_distribution<> range(1, SWARM_SIZE-1);
+#endif
         
         m_totalFindCounter = 0;
         
@@ -182,6 +193,28 @@ public:
         }
     }
     
+    void performAllToAll()
+    {
+        assert( m_nodes.size() > 0 );
+
+        for( auto& requester : m_nodes )
+        {
+            if ( requester.index() == 0 )
+            {
+                continue;
+            }
+            
+            for( auto& target: m_nodes )
+            {
+                if ( &requester != &target )
+                {
+//                    requester.findNode( target );
+                    requester.addTargetToBuckets( target );
+                }
+            }
+        }
+    }
+    
     void performX()
     {
         for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
@@ -191,7 +224,14 @@ public:
             NodeKey key = *it;
             //key.m_key = key.m_key ^ 0x8000000000000000;
             key.m_key = key.m_key ^ 0x1;
+
+//            LOG("xxx: " << it - m_nodes.begin() );
+//            if ( it - m_nodes.begin() == 1000 )
+//            {
+//                LOG("xxx");
+//            }
             it->findNode( key );
+            LOG( "nodeCount: " << it->nodeCount() );
         }
 
 //        for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
@@ -199,6 +239,7 @@ public:
 //            NodeKey key = *it;
 //            key.m_key = key.m_key ^ 0xFFFFFFFFFFFFFFFF;
 //            it->findNode( key );
+//            LOG( "nodeCount: " << it->nodeCount() );
 //        }
 
 //        for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )

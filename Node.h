@@ -130,6 +130,15 @@ public:
         m_buckets[index].tryToAddNodeInfo( node, node.m_index );
     }
     
+    bool addTargetToBuckets( const Node& targetNode )
+    {
+        if ( targetNode.m_key != m_key )
+        {
+            int index = calcBucketIndex( targetNode );
+            m_buckets[index].tryToAddNodeInfo( targetNode, targetNode.m_index );
+        }
+    }
+    
     bool findNode( const NodeKey& searchedNodeKey )
     {
         ClosestNodes closestNodes;
@@ -137,7 +146,7 @@ public:
         m_candidateSet.clear();
         m_usedCandidates.clear();
 #endif
-
+        
         m_isFound = privateFindNode( searchedNodeKey, closestNodes, *this );
 
         if ( ! m_isFound )
@@ -179,7 +188,7 @@ public:
 
             if ( closestNode.privateFindNode( searchedNodeKey, closestNodes, *this ) )
             {
-                //addClosestNodeToBuckets( closestNode );
+                addClosestNodeToBuckets( closestNode );
                 return true;
             }
             addClosestNodeToBuckets( closestNode );
@@ -225,5 +234,15 @@ public:
         {
             isBucketEmpty[index] = 1;
         }
+    }
+    
+    size_t nodeCount() const
+    {
+        size_t nodeCount = 0;
+        for( const Bucket& b: m_buckets )
+        {
+            nodeCount += b.size();
+        }
+        return nodeCount;
     }
 };
