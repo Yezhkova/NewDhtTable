@@ -101,9 +101,14 @@ public:
 
     inline void addClosestNodes( const NodeKey& searchedNodeKey, ClosestNodes& closestNodes, size_t& addedClosestNodeCounter ) const
     {
-#ifdef USE_PRIORITY
-        std::vector<NodeInfo> nodes(m_nodes);
-        //std::sort( nodes.begin(), nodes.end() );
+#ifdef SORT_CLOSEST_NODES_IN BUCKET
+        //        std::vector<NodeInfo> nodes(m_nodes);
+        std::vector<NodeInfo> nodes;
+        for( const auto& nodeInfo : m_nodes )
+        {
+            nodes.emplace_back( NodeInfo{ nodeInfo.m_key ^ searchedNodeKey.m_key, nodeInfo.m_nodeIndex } );
+        }
+        std::sort( nodes.begin(), nodes.end() );
         //std::sort( nodes.begin(), nodes.end(), [] (const auto& a, const auto& b ) { return !(a<b);} );
         //std::reverse( nodes.begin(), nodes.end() );
         for( const auto& nodeInfo : nodes )

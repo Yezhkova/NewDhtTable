@@ -5,7 +5,7 @@
 #pragma once
 
 #define USE_CLOSEST_NODES_SET
-#define USE_PRIORITY
+#define SORT_CLOSEST_NODES_IN BUCKET
 
 const size_t SWARM_SIZE = 10000;
 const size_t ITER_NUMBER = 10;

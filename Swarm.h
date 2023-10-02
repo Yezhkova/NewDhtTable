@@ -186,6 +186,8 @@ public:
     {
         for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
         {
+            it->prepareToIteration();
+
             NodeKey key = *it;
             //key.m_key = key.m_key ^ 0x8000000000000000;
             key.m_key = key.m_key ^ 0x1;
@@ -196,7 +198,7 @@ public:
 //        {
 //            NodeKey key = *it;
 //            key.m_key = key.m_key ^ 0xFFFFFFFFFFFFFFFF;
-//            it->findNode( key, *it );
+//            it->findNode( key );
 //        }
 
 //        for( auto it = m_nodes.begin()+1; it != m_nodes.end(); it++ )
