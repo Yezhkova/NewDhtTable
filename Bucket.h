@@ -117,9 +117,9 @@ public:
 //            { NodeInfo n = nodes.front(); nodes.erase( nodes.begin() ); nodes.push_back(n); }
 //            { NodeInfo n = nodes.front(); nodes.erase( nodes.begin() ); nodes.push_back(n); }
 //        }
-        //std::shuffle(std::begin(nodes), std::end(nodes), rng);
-        //std::sort( nodes.begin(), nodes.end() );
-        //std::reverse( nodes.begin(), nodes.end() );
+//        std::shuffle(std::begin(nodes), std::end(nodes), rng);
+//        std::sort( nodes.begin(), nodes.end() );
+//        std::reverse( nodes.begin(), nodes.end() );
         for( const auto& nodeInfo : nodes )
         {
             if ( addedClosestNodeCounter >= CLOSEST_NODES_NUMBER )

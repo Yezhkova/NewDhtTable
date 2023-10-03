@@ -191,7 +191,10 @@ public:
                 addClosestNodeToBuckets( closestNode );
                 return true;
             }
-            addClosestNodeToBuckets( closestNode );
+            if ( closestNodes.size() > 0 )
+            {
+                addClosestNodeToBuckets( closestNode );
+            }
         }
 #else
         for( size_t i=0; i<closestNodes.size(); i++ )

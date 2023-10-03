@@ -9,7 +9,7 @@
 
 //#define USE_RAND_SEED
 
-const size_t SWARM_SIZE = 100000;
+const size_t SWARM_SIZE = 10000;
 const size_t ITER_NUMBER = 100;
 const size_t CLOSEST_NODES_CAPACITY = 4;
 const size_t CLOSEST_NODES_NUMBER = 2;
