@@ -27,6 +27,48 @@ class Node : public NodeKey, public NodeStatistic
 //public:
 //    char m_map[SWARM_SIZE];
 
+    // Gossip
+public:
+    void broadcastMessage( uint64_t& maxLevelCounter )
+    {
+        Key left = 0x0;
+        Key right = 0xFFFFFFFFFFFFFFFF;
+        maxLevelCounter = 1;
+        broadcastMessage( left, right, maxLevelCounter );
+    }
+    
+    Node* findNearest( Key target, Key left, Key right )
+    {
+        //todo
+        return nullptr;
+    }
+    
+    void broadcastMessage( Key left, Key right, uint64_t& maxLevelCounter )
+    {
+        Key key1 = left+(right-left)/4;
+        Key right1 = left+(right-left)/2;
+        Key key2 = left+3*(right-left)/4;
+        Key left2 = left+(right-left)/2;
+        
+        // Find nearest to key1, but insight [left,right1]
+        Node* node1 = findNearest( key1, left, right1 );
+        uint64_t maxLevelCounter1 = maxLevelCounter;
+        if ( node1 != nullptr )
+        {
+            node1->broadcastMessage( left, right1, maxLevelCounter1 );
+        }
+        
+        // Find nearest to key2, but insight [left2,right]
+        Node* node2 = findNearest( key2, left2, right );
+        uint64_t maxLevelCounter2 = maxLevelCounter;
+        if ( node2 != nullptr )
+        {
+            node2->broadcastMessage( left2, right, maxLevelCounter2 );
+        }
+
+        maxLevelCounter = std::max( maxLevelCounter1, maxLevelCounter2 );
+    }
+
 public:
     Node(){}
 
@@ -130,13 +172,20 @@ public:
         m_buckets[index].tryToAddNodeInfo( node, node.m_index );
     }
     
-    bool addTargetToBuckets( const Node& targetNode )
+    void addTargetToBuckets( const Node& targetNode )
     {
         if ( targetNode.m_key != m_key )
         {
             int index = calcBucketIndex( targetNode );
             m_buckets[index].tryToAddNodeInfo( targetNode, targetNode.m_index );
         }
+    }
+    
+    void sendSomeMessageTo( Node& recipient )
+    {
+        assert( recipient.m_key != m_key );
+        // just add me to buckets
+        recipient.addTargetToBuckets( *this );
     }
     
     bool findNode( const NodeKey& searchedNodeKey )

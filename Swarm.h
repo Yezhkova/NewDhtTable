@@ -185,7 +185,10 @@ public:
                 
             auto& searchedNode = m_nodes[searchedNodeIndex];
             
-            requester.findNode( searchedNode );
+            if ( requester.findNode( searchedNode ) )
+            {
+                requester.sendSomeMessageTo( searchedNode );
+            }
             //assert( bootstrapNode().findNode( searchedNode, requester ) );
             //requester.m_map[randomNodeIndex] = '+';
             
